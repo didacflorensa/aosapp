@@ -1,0 +1,109 @@
+<div class="inner-container">
+<div id="create_main" style="margin-bottom: 60px;">
+
+  <div class="row">
+    <h2>
+      Launch a new execution
+      <br>
+      <small>Here you can configure a VM and choose what model and method you want to use for solving the problem.
+      </small>
+    </h2>
+  </div>
+
+  <div id="first-step" ng-show="state == CreateState.FIRSTSTEP || state == CreateState.SECONDSTEP">
+
+    <h3>
+      1. Choose the type of the model<br>
+      <small>Do you have a deterministic or a stochastic problem? The remaining steps of the session creation will be adapted
+        to your choice here</small>
+    </h3>
+    <problem-form></problem-form>
+
+    <div ng-show="problemType == 'Determinist'">
+      <h3>
+        2. Choose the solver<br>
+        <small>Almost there... Now choose the solver which will be used to solve the problem.</small>
+      </h3>
+      <solver-form></solver-form>
+    </div>
+
+    <!--<model-form ng-show="problemType == 'Stochastic'"></model-form>-->
+
+    <!--<method-form ng-show="problemType == 'Stochastic'"></method-form>-->
+  </div>
+
+  <div id="second-step" ng-hide="(solverForm.$invalid || !selectedMethod) || state != CreateState.SECONDSTEP">
+
+        <h3>
+          3. Upload input file<br>
+          <small>Only one type of input is necessary</small>
+        </h3>
+        <upload-file-form-simple></upload-file-form-simple>
+
+        <h3>
+          4. Choose solution type<br>
+          <small> The optimal choice will give you the best solution whatever the duration.
+            While, the feasible choice will give you the best solution found in a specific time limit.</small>
+        </h3>
+        <solution-type-form></solution-type-form>
+
+        <h3>
+          5. Contact information<br>
+          <small>That's all! Give us your email address to alert you when execution is finished.</small>
+        </h3>
+        <contact-form></contact-form>
+
+        <form>
+        <button type="button" class="btn btn-md btn-success center-block" ng-click="createSession()"
+              ng-disabled="!validateFiles() || inputUpload.$invalid || emailInput.$invalid || (session.type == 'Feasible' && !session.maximumDuration)"
+        >Submit!</button>
+        </form>
+
+    </div>
+
+  <div id="creating" class="row text-center" ng-show="state == CreateState.CREATING" style="margin-top: 60px">
+    <h3>
+      <img src="../images/loading_spinner.gif" width="75" style="margin-left: -25px">Creating session...
+      <br>
+      <small ng-show="createStep == CreateStep.CREATING_SESSION">Your session is being created. Please wait...</small>
+      <small ng-show="createStep == CreateStep.UPLOADING_FILES">Session created! Uploading files... This can take a while.</small>
+    </h3>
+  </div>
+
+  <div id="success" class="row" ng-show="state == CreateState.CREATED">
+    <h3 style="color: #A1D490;">Congratulations!</h3>
+    <h4>Your session has been successfully created. You will be notified on your email when the execution finishes.</h4>
+    <h5>You can access to execution results using this direct link:</h5>
+    <h6>
+      <a href="http://{{location.host()}}/#/session/view/{{sessionId}}?key={{sessionKey}}">
+        http://{{location.host()}}/#/session/view/{{sessionId}}?key={{sessionKey}}
+      </a></b>
+    </h6>
+    <h5>Or by going to <a href="#/">Check results</a> section and introducing the information of you execution:</h5>
+    <h6>
+      <ul>
+        <li>ID: {{sessionId}}</li>
+        <li>Access key: {{sessionKey}}</li>
+      </ul>
+    </h6>
+  </div>
+
+  <div id="create-error" class="row" ng-show="state == CreateState.ERROR" style="margin-top: 60px">
+    <div class="col-sm-2" style="margin: 5px -50px 0 100px; display: inline">
+      <img src="../images/error.png" width="50">
+    </div>
+    <div class="col-sm-8" style="display: inline; margin: 0">
+      <h3>
+        Ups!
+        <br>
+        <small>
+          We are sorry. An error has occurred when trying to create your session. Please try again later.
+        </small>
+      </h3>
+    </div>
+    <div class="text-center" style="margin-top: 150px">
+      <button class="btn btn-primary" onclick="window.location.reload()">Try again</button>
+    </div>
+  </div>
+</div>
+</div>

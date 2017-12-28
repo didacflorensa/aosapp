@@ -19,7 +19,8 @@ angular
     'ui.router',
     'hm.readmore',
     'chart.js',
-    'rzModule'
+    'rzModule',
+    'angAccordion'
   ])
   .config(function ($stateProvider) {
     $stateProvider
