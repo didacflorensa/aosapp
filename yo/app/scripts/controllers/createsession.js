@@ -9,7 +9,7 @@
  */
 
 angular.module('sposApp')
-  .controller('CreateSessionCtrl', function ($scope, $q, $state, $http, $location, VirtualMachine, Parameters, Session, fileReader, ModelInfo, MethodInfo) {
+  .controller('CreateSessionCtrl', function ($scope, $q, $state, $http, $location) {
     $scope.vmConfig = {virtualCPUs:0, realCPUs:0, ram:0};
     $scope.parameters = {isClustered: false, files: []};
     $scope.session = {};
@@ -48,222 +48,93 @@ angular.module('sposApp')
     $scope.sessionKey = "";
     $scope.sessionId = "";
 
-    $scope.clearPredefinedVM = function () {
-      $scope.predefinedVM = "";
-    };
-
-    $scope.clearVMConfig = function () {
-      $scope.vmConfig = {virtualCPUs:0, realCPUs:0, ram:0};
-    };
-
-    $scope.getCompatibleMethods = function () {
-      $scope.methodLoadState = $scope.MethodLoadState.LOADING;
-      ModelInfo.query({action: 'search', search: 'findByModel', modelName: $scope.selectedModel})
-        .$promise.then(function (modelResponse) {
-        $scope.parameters.model = modelResponse._embedded.models[0];
-        $scope.methodLoadState = $scope.MethodLoadState.LOADED;
-      }).catch(function (error) {
-        $scope.methodLoadState = $scope.MethodLoadState.ERROR;
-      });
-    };
-
-    $scope.loadMethod = function () {
-      if ($state.current.name == "createSession") {
-        SetSimpleVM();
-        $scope.state = $scope.CreateState.SECONDSTEP;
-      }
-      MethodInfo.query({action: 'search', search: 'findByMethod', methodName: $scope.selectedMethod})
-        .$promise.then(function (methodResponse) {
-        $scope.parameters.method = methodResponse._embedded.methods[0];
-      });
-    };
-
-    $scope.createSession = function () {
-      $scope.state = $scope.CreateState.CREATING;
-      createSession();
-    };
-
-    $scope.completeFirstStep = function () {
-      $scope.state = $scope.CreateState.SECONDSTEP;
-      createVMConfig();
-    };
-
-    var uploadFileToUrl = function(files, uploadUrl, success, error){
-      var fd = new FormData();
-
-      for (var i=0; i < files.length; i++)
+    $scope.panesA = [
       {
-        fd.append('file' + i, files[i]);
+        id: 'pane-1a',
+        header: '2SFVSC',
+        content: 'A Production Planning model considering uncertain demand using two stage stochastic programming in a fresh vegetable supply chain context.',
+        isExpanded: true
+      },
+      {
+        id: 'pane-2a',
+        header: 'DASC',
+
+        subpanes: [
+          {
+            id: 'subpane-1a',
+            header: '2SDASC',
+            content: 'A two stage model to help the optimal purchase and storage policies for seasonal fruits.'
+          },
+          {
+            id: 'subpane-1a',
+            header: '2SDASC',
+            content: 'A two stage model to help the optimal purchase and storage policies for seasonal fruits.'
+          }]
+      },
+      {
+        id: 'pane-3a',
+        header: 'Pane 3',
+        content: 'Aliquam erat ac ipsum. Integer aliquam purus. Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.',
+
+        subpanes: [
+          {
+            id: 'subpane-1a',
+            header: 'Subpane 1',
+            content: 'Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.'
+          },
+          {
+            id: 'subpane-2a',
+            header: 'Subpane 2 (disabled)',
+            content: 'Curabitur et ligula. Ut molestie a, ultricies porta urna. Quisque lorem tortor fringilla sed, vestibulum id.',
+            isDisabled: true
+          }
+        ]
       }
+    ];
 
-      $http.post(uploadUrl, fd, {
-        transformRequest: angular.identity,
-        headers: {'Content-Type': undefined}
-      })
-        .success(function(){
-          success();
-        })
-        .error(function(){
-          error();
-        });
-    };
+    $scope.panesB = [
+      {
+        id: 'pane-1b',
+        header: 'Pane 1',
+        content: 'Curabitur et ligula. Ut molestie a, ultricies porta urna. Vestibulum commodo volutpat a, convallis ac, laoreet enim. Phasellus fermentum in, dolor. Pellentesque facilisis. Nulla imperdiet sit amet magna. Vestibulum dapibus, mauris nec malesuada fames ac turpis velit, rhoncus eu, luctus et interdum adipiscing wisi.',
+        isExpanded: true
+      },
+      {
+        id: 'pane-2b',
+        header: 'Pane 2',
+        content: 'Lorem ipsum dolor sit amet enim. Etiam ullamcorper. Suspendisse a pellentesque dui, non felis. Maecenas malesuada elit lectus felis, malesuada ultricies.'
+      },
+      {
+        id: 'pane-3b',
+        header: 'Pane 3',
+        content: 'Aliquam erat ac ipsum. Integer aliquam purus. Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.',
 
-    $scope.uploadFiles = function (url, success, error) {
-      var files = [$scope.file1];
-      if ($scope.file2)
-        files.push($scope.file2);
-      uploadFileToUrl(files, url, success, error);
-    };
-
-    var getPredefinedVM = function () {
-      var id = -1;
-      switch ($scope.predefinedVM) {
-        case "High":
-          id = 3;
-          break;
-        case "Medium":
-          id = 2;
-          break;
-        case "Low":
-          id = 1;
-          break;
+        subpanes: [
+          {
+            id: 'subpane-1b',
+            header: 'Subpane 1',
+            content: 'Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.'
+          },
+          {
+            id: 'subpane-2b',
+            header: 'Subpane 2 (disabled)',
+            content: 'Curabitur et ligula. Ut molestie a, ultricies porta urna. Quisque lorem tortor fringilla sed, vestibulum id.',
+            isDisabled: true
+          }
+        ]
       }
-      $scope.session.vmConfig = VirtualMachine.query({id: id});
+    ];
+
+    $scope.expandCallback = function (index, id) {
+      console.log('expand:', index, id);
     };
 
-    var createVMConfig = function () {
-      if ($scope.predefinedVM === "") {
-        $http.post('http://193.144.12.55/virtualmachine', $scope.vmConfig)
-          .success(function (data, status, headers, config) {
-            VirtualMachine.get({id: headers('Location').split('/').pop()}).$promise.then(function (vm) {
-              $scope.session.vmConfig = vm;
-            });
-
-          });
-        $scope.clearVMConfig();
-      } else {
-        getPredefinedVM();
-      }
+    $scope.collapseCallback = function (index, id) {
+      console.log('collapse:', index, id);
     };
 
-    var createSession = function () {
-      CreateSession();
-    };
+    $scope.$on('accordionA:onReady', function () {
+      console.log('accordionA is ready!');
+    });
 
-    var SetSimpleVM = function() {
-      $scope.session.vmConfig = VirtualMachine.query({id: 3});
-    };
-
-    var CreateSession = function() {
-      $scope.session.info = $scope.parameters;
-      if ($scope.session.type == 'Optimal') {
-        $scope.session.maximumDuration = -1;
-      }
-
-      Session.save($scope.session).$promise.then(function (session) {
-        $scope.sessionId = session.id;
-        $scope.sessionKey = session.key;
-
-        $scope.uploadFiles("http://193.144.12.55/session/" + $scope.sessionId + "/uploadFiles?key=" + $scope.sessionKey, function () {
-          $scope.state = $scope.CreateState.CREATED;
-        }, function() {
-          $scope.state = $scope.CreateState.ERROR;
-        });
-      }).catch(function (error) {
-        $scope.state = $scope.CreateState.ERROR;
-        if (error.data.message.substring(0, 7) == "VMERROR")
-        {
-          $scope.errorType = "VM";
-        }
-      });
-    };
-
-    $scope.activateInput = function (format) {
-      $scope.fileType = format;
-      $scope.parameters.files = [];
-      $('#input-mps').fileinput('reset');
-      $('#input-lp').fileinput('reset');
-      $('#input-dat').fileinput('reset');
-      $('#input-mod').fileinput('reset');
-
-      $('#input-mps').fileinput('enable');
-      $('#input-lp').fileinput('enable');
-      $('#input-dat').fileinput('enable');
-      $('#input-mod').fileinput('enable');
-
-      $('#input-mps').fileinput('clear');
-      $('#input-lp').fileinput('clear');
-      $('#input-dat').fileinput('clear');
-      $('#input-mod').fileinput('clear');
-    }
-
-    $scope.validateFiles = function () {
-
-      if (!$scope.file1)
-        return false;
-
-      if (($scope.file1.name.split('.').pop() == "dat" || $scope.file1.name.split('.').pop() == "mod") && !$scope.file2)
-        return false;
-
-      return true;
-    };
-
-    $scope.setDeterminist = function () {
-      if ($scope.problemType == "Determinist") {
-        $scope.methodLoadState = $scope.MethodLoadState.LOADING;
-        ModelInfo.query({action: 'search', search: 'findByModel', modelName: "Determinist"})
-          .$promise.then(function (modelResponse) {
-          $scope.parameters.model = modelResponse._embedded.models[0];
-          $scope.methodLoadState = $scope.MethodLoadState.LOADED;
-        }).catch(function (error) {
-          $scope.methodLoadState = $scope.MethodLoadState.ERROR;
-        });
-      }
-    }
-
-    $scope.vCpuSlider = {
-      options: {
-        floor: 1,
-        ceil: 10,
-        showTicks: true,
-        onChange: function(id) {
-          $scope.clearPredefinedVM();
-        },
-        translate: function(value) {
-          return value + " vCPUs";
-        }
-      }
-    };
-
-    $scope.rCpuSlider = {
-      options: {
-        floor: 0.5,
-        ceil: 10,
-        step: 0.5,
-        precision: 1,
-        showTicks: 1,
-        onChange: function(id) {
-          $scope.clearPredefinedVM();
-        },
-        translate: function(value) {
-          return value + " CPUs";
-        }
-      }
-    };
-
-    $scope.memSlider = {
-      options: {
-        floor: 512,
-        ceil: 10240,
-        step:  256,
-        precision: 0,
-        showTicks: 1024,
-        onChange: function(id) {
-          $scope.clearPredefinedVM();
-        },
-        translate: function(value) {
-          return value + " Mb";
-        }
-      }
-    };
   });

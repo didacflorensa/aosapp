@@ -20,7 +20,7 @@ angular
     'hm.readmore',
     'chart.js',
     'rzModule',
-    'angAccordion'
+    'vAccordion'
   ])
   .config(function ($stateProvider) {
     $stateProvider

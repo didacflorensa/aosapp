@@ -1,7 +1,30 @@
-<ang-accordion>
-  <collapsible-item item-title="Some Heading">
-    <div>This is regular html code</div>
-  </collapsible-item>
 
-  ... <!-- More collapsible items -->
-</ang-accordion>
+<div class="row">
+  <div class="container-accordion">
+    <v-accordion id="accordionA" class="vAccordion--default" control="accordionA" onexpand="expandCallback(index, id)" oncollapse="collapseCallback(index, id)">
+
+      <v-pane id="{{ ::pane.id }}" ng-repeat="pane in panesA" expanded="pane.isExpanded">
+        <v-pane-header id="{{ ::pane.id }}-header" aria-controls="{{ ::pane.id }}-content">
+          <h5>{{ ::pane.header }}</h5>
+        </v-pane-header>
+
+        <v-pane-content id="{{ ::pane.id }}-content" aria-labelledby="{{ ::pane.id }}-header">
+          <p>{{ ::pane.content }}</p>
+
+          <v-accordion id="nestedAccordionA" ng-if="pane.subpanes">
+            <v-pane id="{{ ::subpane.id }}" ng-repeat="subpane in pane.subpanes" ng-disabled="subpane.isDisabled">
+              <v-pane-header id="{{ ::subpane.id }}-header" aria-controls="{{ ::subpane.id }}-header">
+                <h5>{{ ::subpane.header }}</h5>
+              </v-pane-header>
+              <v-pane-content id="{{ ::subpane.id }}-content" aria-labelledby="{{ ::subpane.id }}-content">
+                <p>{{ ::subpane.content }}</p>
+              </v-pane-content>
+            </v-pane>
+          </v-accordion>
+        </v-pane-content>
+      </v-pane>
+
+    </v-accordion>
+  </div>
+</div>
+

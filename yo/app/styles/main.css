@@ -224,4 +224,11 @@ form {
   .jumbotron {
     border-bottom: 0;
   }
+
+  .container-accordion {
+    margin-left: 25%;
+    margin-right: 25%;
+  }
+
+
 }
