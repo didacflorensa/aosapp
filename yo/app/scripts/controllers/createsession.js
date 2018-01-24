@@ -62,68 +62,84 @@ angular.module('sposApp')
         subpanes: [
           {
             id: 'subpane-1a',
-            header: '2SDASC',
+            header: 'stochastic',
             content: 'A two stage model to help the optimal purchase and storage policies for seasonal fruits.'
-          },
-          {
-            id: 'subpane-1a',
-            header: '2SDASC',
-            content: 'A two stage model to help the optimal purchase and storage policies for seasonal fruits.'
-          }]
-      },
-      {
-        id: 'pane-3a',
-        header: 'Pane 3',
-        content: 'Aliquam erat ac ipsum. Integer aliquam purus. Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.',
-
-        subpanes: [
-          {
-            id: 'subpane-1a',
-            header: 'Subpane 1',
-            content: 'Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.'
           },
           {
             id: 'subpane-2a',
-            header: 'Subpane 2 (disabled)',
-            content: 'Curabitur et ligula. Ut molestie a, ultricies porta urna. Quisque lorem tortor fringilla sed, vestibulum id.',
-            isDisabled: true
-          }
-        ]
-      }
-    ];
+            header: 'deterministic',
+            content: 'A deterministic model to help the optimal purchase and storage policies for seasonal fruits.'
+          },
+          {
+            id: 'subpane-3a',
+            header: 'ODFP',
 
-    $scope.panesB = [
-      {
-        id: 'pane-1b',
-        header: 'Pane 1',
-        content: 'Curabitur et ligula. Ut molestie a, ultricies porta urna. Vestibulum commodo volutpat a, convallis ac, laoreet enim. Phasellus fermentum in, dolor. Pellentesque facilisis. Nulla imperdiet sit amet magna. Vestibulum dapibus, mauris nec malesuada fames ac turpis velit, rhoncus eu, luctus et interdum adipiscing wisi.',
-        isExpanded: true
+            subsubpanes: [
+              {
+                id: 'subsubpane-1a',
+                header: 'deterministic',
+                content: 'A deterministic model to tackle the optimal delivery of fattened pigs to the abattoir'
+              },
+              {
+                id: 'subsubpane-2a',
+                header: 'multistage',
+                content: 'A multi - stage stochastic model to tackle the optimal delivery of fattened pigs to the abattoir.'
+              },
+              {
+                id: 'subsubpane-3a',
+                header: 'multihorizon',
+                content: 'A multi - horizon stochastic model to tackle the optimal delivery of fattened pigs to the abattoir.'
+              }
+
+            ]
+          }
+
+          ]
       },
       {
-        id: 'pane-2b',
-        header: 'Pane 2',
-        content: 'Lorem ipsum dolor sit amet enim. Etiam ullamcorper. Suspendisse a pellentesque dui, non felis. Maecenas malesuada elit lectus felis, malesuada ultricies.'
-      },
-      {
-        id: 'pane-3b',
-        header: 'Pane 3',
-        content: 'Aliquam erat ac ipsum. Integer aliquam purus. Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.',
+        id: 'pane-3a',
+        header: 'electricity',
 
         subpanes: [
           {
-            id: 'subpane-1b',
-            header: 'Subpane 1',
-            content: 'Quisque lorem tortor fringilla sed, vestibulum id, eleifend justo vel bibendum sapien massa ac turpis faucibus orci luctus non.'
+            id: 'subpane-1a',
+            header: 'Chiara',
+            content: 'A multi - horizon stochastic model to electricity fileds.'
           },
           {
-            id: 'subpane-2b',
-            header: 'Subpane 2 (disabled)',
-            content: 'Curabitur et ligula. Ut molestie a, ultricies porta urna. Quisque lorem tortor fringilla sed, vestibulum id.',
-            isDisabled: true
+            id: 'subpane-2a',
+            header: 'Sam',
+
+            subsubpanes: [
+              {
+                id: 'subsubpane-1a',
+                header: 'deterministic',
+                content: 'A deterministic model to solve the microgrid problem.'
+              },
+              {
+                id: 'subsubpane-1a',
+                header: 'game theory',
+                content: 'A non - linear model to solve the equilibrium problems in microgrids.'
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: 'pane-4a',
+        header: 'sheduling',
+
+        subpanes: [
+          {
+            id: 'subpane-1a',
+            header: 'GP',
+            content: 'A non linear model to assing task ensuring SLA.'
           }
         ]
       }
     ];
+
 
     $scope.expandCallback = function (index, id) {
       console.log('expand:', index, id);
@@ -136,5 +152,56 @@ angular.module('sposApp')
     $scope.$on('accordionA:onReady', function () {
       console.log('accordionA is ready!');
     });
+
+
+    var json = $.getJSON("resources/aos.json", function () {
+      console.log("Success");
+      var data_str = JSON.stringify(json);
+
+      console.log("Debug: " + data_str);
+
+
+      var obj =  JSON.parse(data_str);
+
+      console.log("Debug2: " + obj);
+
+      var names = [];
+      var values = [];
+
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          names.push(key);
+          values.push(obj[key]);
+        }
+      }
+
+      var obj2 =  values[1];
+
+      console.log("Model 0: " + obj.models);
+
+      console.log("Model 0: " + obj2.models);
+      /*console.log("1: " + obj2.models.agriculture[0]);
+      console.log("2: " + obj2.models.agriculture[1]);
+      console.log("3: " + obj2.models.agriculture[2]);
+      console.log("4: " + obj2.models.agriculture[3]);*/
+
+
+      console.log("JSON: " + values[1]);
+
+
+
+    });
+
+
+    $scope.execution = function () {
+
+      var email = $("#email").val();
+      console.log(email);
+    };
+
+
+
+
+
 
   });
