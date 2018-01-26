@@ -1,62 +1,61 @@
 {
 	"models": {
 		"agriculture": {
+      "2SFVSC": {
+        "name": "2SFVSC",
+        "description": "A Production Planning model considering uncertain demand using two stage stochastic programming in a fresh vegetable supply chain context."
+      },
+      "DASC": {
+        "stochastic": {
+          "name": "2SDASC",
+          "description": "A two stage model to help the optimal purchase and storage policies for seasonal fruits."
+        },
+        "deterministic": {
+          "name": "DASC",
+          "description": "A deterministic model to help the optimal purchase and storage policies for seasonal fruits"
+        }
+      },
+      "ODFP": {
+        "deterministic": {
+          "name": "ODFP",
+          "description": "A deterministic model to tackle the optimal delivery of fattened pigs to the abattoir"
+        },
+        "multistage": {
+          "name": "MSODFP",
+          "description": "A multi - stage stochastic model to tackle the optimal delivery of fattened pigs to the abattoir"
+        },
+        "multihorizon": {
+          "name": "ODFP",
+          "description": "A multi - horizon stochastic model to tackle the optimal delivery of fattened pigs to the abattoir"
+        }
+      }
+    },
 
-			"2SFVSC": {
-				"name": "2SFVSC",
-				"description": "A Production Planning model considering uncertain demand using two stage stochastic programming in a fresh vegetable supply chain context."
-			},
-			"DASC": {
-				"stochastic": {
-					"name": "2SDASC",
-					"description": "A two stage model to help the optimal purchase and storage policies for seasonal fruits."
-				},
-				"deterministic": {
-					"name": "DASC",
-					"description": "A deterministic model to help the optimal purchase and storage policies for seasonal fruits"
-				},
+    "electricity": {
+      "Chiara": {
+        "name": "Chiara Model",
+        "description": "A multi - horizon stochastic model to electricity fileds."
+      },
+      "Sam": {
+        "deterministic": {
+          "name": "SAM",
+          "description": "A deterministic model to solve the microgrid problem."
+        },
+        "game theory": {
+          "name": "SAMGT",
+          "description": "A non - linear model to solve the equilibrium problems in microgrids."
+        }
+      }
+    },
 
-				"ODFP": {
-					"deterministic": {
-						"name": "ODFP",
-						"description": "A deterministic model to tackle the optimal delivery of fattened pigs to the abattoir"
-					},
-					"multistage": {
-						"name": "MSODFP",
-						"description": "A multi - stage stochastic model to tackle the optimal delivery of fattened pigs to the abattoir"
-					},
-					"multihorizon": {
-						"name": "ODFP",
-						"description": "A multi - horizon stochastic model to tackle the optimal delivery of fattened pigs to the abattoir"
-					}
-				}
-			},
+    "scheduling": {
 
-			"electricity": {
-				"Chiara": {
-					"name": "Chiara Model",
-					"description": "A multi - horizon stochastic model to electricity fileds."
-				},
-				"Sam": {
-					"deterministic": {
-						"name": "SAM",
-						"description": "A deterministic model to solve the microgrid problem."
-					},
-					"game theory": {
-						"name": "SAMGT",
-						"description": "A non - linear model to solve the equilibrium problems in microgrids."
-					}
-				}
-			},
+      "GP": {
+        "name": "Green Police",
+        "description": "A non linear model to assing task ensuring SLA."
+      }
+    }
 
-			"scheduling": {
+  }
 
-				"GP": {
-					"name": "Green Police",
-					"description": "A non linear model to assing task ensuring SLA."
-				}
-			}
-
-		}
-	}
 }
