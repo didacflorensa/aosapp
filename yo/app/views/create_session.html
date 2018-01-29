@@ -2,7 +2,7 @@
   <div class="container-accordion">
     <v-accordion id="accordionA" class="vAccordion--default" control="accordionA" onexpand="expandCallback(index, id)" oncollapse="collapseCallback(index, id)">
 
-      <v-pane id="{{ ::pane.id }}" ng-repeat="pane in panesA" expanded="pane.isExpanded">
+      <v-pane id="{{ ::pane.id }}" ng-repeat="pane in aos_data" expanded="pane.isExpanded">
         <v-pane-header id="{{ ::pane.id }}-header" aria-controls="{{ ::pane.id }}-content">
           <h5>{{ ::pane.header }}</h5>
         </v-pane-header>
@@ -10,16 +10,16 @@
         <v-pane-content id="{{ ::pane.id }}-content" aria-labelledby="{{ ::pane.id }}-header">
           <p>{{ ::pane.content }}</p>
 
-          <v-accordion id="nestedAccordionA" ng-if="pane.subpanes">
-            <v-pane id="{{ ::subpane.id }}" ng-repeat="subpane in pane.subpanes" ng-disabled="subpane.isDisabled">
+          <v-accordion id="nestedAccordionA" ng-if="pane.models">
+            <v-pane id="{{ ::subpane.id }}" ng-repeat="subpane in pane.models" ng-disabled="subpane.isDisabled">
               <v-pane-header id="{{ ::subpane.id }}-header" aria-controls="{{ ::subpane.id }}-header">
                 <h5>{{ ::subpane.header }}</h5>
               </v-pane-header>
               <v-pane-content id="{{ ::subpane.id }}-content" aria-labelledby="{{ ::subpane.id }}-content">
                 <p>{{ ::subpane.content }}</p>
 
-                <v-accordion id="subnestedAccordionA" ng-if="subpane.subsubpanes">
-                  <v-pane id="{{ ::subsubpane.id }}" ng-repeat="subsubpane in subpane.subsubpanes" ng-disabled="subsubpane.isDisabled">4
+                <v-accordion id="subnestedAccordionA" ng-if="subpane.versions">
+                  <v-pane id="{{ ::subsubpane.id }}" ng-repeat="subsubpane in subpane.versions" ng-disabled="subsubpane.isDisabled">4
                     <v-pane-header id="{{ ::subsubpane.id }}-header" aria-controls="{{ ::subsubpane.id }}-header">
                       <h5>{{ ::subsubpane.header }}</h5>
                     </v-pane-header>
