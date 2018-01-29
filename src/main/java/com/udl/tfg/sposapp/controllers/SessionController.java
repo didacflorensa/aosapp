@@ -79,8 +79,23 @@ public class SessionController {
     @Value("${localStorageFolder}") private String localStorageFolder;
     @Value("${sshStorageFolder}")   private String sshStorageFolder;
 
+    @RequestMapping(value = "/session/execution", method = RequestMethod.POST)
+    public @ResponseBody HttpEntity<Void> execution (@RequestParam(value = "id") String id,
+                                                     @RequestParam(value = "email") String email) {
 
-    @RequestMapping(value = "/session", method = RequestMethod.POST)
+        System.out.println("Email: " + email);
+        System.out.println("Id: " + id);
+
+        runExecution(email, id);
+
+        return ResponseEntity.ok().build();
+    }
+
+    private void runExecution (String email, String id) {
+        new RunExecutionThread(email, id, executionManager, ocaManager, sshManager, sshStorageFolder);
+    }
+
+    /*@RequestMapping(value = "/session", method = RequestMethod.POST)
     public @ResponseBody HttpEntity<HashMap<String, String>> returnKey(HttpServletRequest request, @Valid @RequestBody Session session) throws Exception {
         if (session != null) {
             System.out.print("Generating session key...");
@@ -90,6 +105,13 @@ public class SessionController {
         } else {
             throw new NullPointerException();
         }
+    }
+
+    @RequestMapping(value = "/session/readfile", method = RequestMethod.GET)
+    public @ResponseBody String returnJSON() {
+
+        System.out.println("Json file");
+        return "Hola a tothom";
     }
 
     @RequestMapping(value = "/session/{id}/uploadFiles", method = RequestMethod.POST)
@@ -351,5 +373,5 @@ public class SessionController {
             default:
                 return null;
         }
-    }
+    }*/
 }

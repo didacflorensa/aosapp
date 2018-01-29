@@ -18,47 +18,53 @@ public class RunExecutionThread extends Thread {
 
     private String vmIP;
 
-    public RunExecutionThread(Session session, SessionRepository sessionRepository,
+    private String email;
+    private String id;
+
+    public RunExecutionThread(String email, String id,
                               ExecutionManager executionManager, OCAManager ocaManager,
-                              SSHManager sshManager, String sshStorageFolder, String vmIP) {
-        this.sessionRepository = sessionRepository;
+                              SSHManager sshManager, String sshStorageFolder) {
+        //this.sessionRepository = sessionRepository;
         this.executionManager = executionManager;
         this.ocaManager = ocaManager;
         this.sshManager = sshManager;
-        this.session = session;
+        //this.session = session;
         this.sshStorageFolder = sshStorageFolder;
-        this.vmIP = vmIP;
+        this.vmIP = "";
+        this.email = email;
+        this.id = id;
     }
 
     public void run() {
         try {
-            ocaManager.WaitUntilCreated(vmIP);
-            if (session.getVmConfig().getId() >= 4)
-                Thread.sleep(60000); //Safe extra wait
-            session.setIP(vmIP);
-            sessionRepository.save(session);
-            SendFiles(session);
-            executionManager.LaunchExecution(session);
+            if(id.equals("2SFVSC-model")){
+                vmIP = "";
+                System.out.println("ID:" + id);
+            }
+
+            else if (id.equals("DASC-model-stochastic"))
+                vmIP = "";
+            else if (id.equals("DASC-model-deterministic"))
+                vmIP = "";
+            else if (id.equals("ODFP-deterministic"))
+                vmIP = "";
+            else if (id.equals("ODFP-multistage"))
+                vmIP = "";
+            else if (id.equals("ODFP-multihorizon"))
+                vmIP = "";
+            else if (id.equals("chiara-model"))
+                vmIP = "";
+            else if (id.equals("sam-model-deterministic"))
+                vmIP = "";
+            else if (id.equals("sam-model-gt"))
+                vmIP = "";
+            else if (id.equals("category-cloud-GP"))
+                vmIP = "";
+
+
         } catch (Exception e) {
-            System.out.println("Error launching execution: " + e.getMessage());
-            sessionRepository.delete(session);
+
         }
     }
 
-    private void SendFiles(Session session) throws Exception {
-        com.jcraft.jsch.Session sshSession = null;
-        try {
-            sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
-            sshManager.CleanPath(sshSession, sshStorageFolder + "/" + String.valueOf(session.getId()));
-            for (int i=0; i < session.getInfo().getFiles().size(); i++){
-                File file = new File(session.getInfo().getFiles().get(i).getPath());
-                sshManager.SendFile(sshSession, session.getId(), file);
-            }
-            sshSession.disconnect();
-        } catch (Exception e) {
-            System.out.println("ERROR SENDING FILES " + e.getMessage());
-            if (sshSession != null) sshSession.disconnect();
-            throw new Exception(e);
-        }
-    }
 }

@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" style="margin-top: 10%; margin-bottom: 10%">
   <div class="container-accordion">
     <v-accordion id="accordionA" class="vAccordion--default" control="accordionA" onexpand="expandCallback(index, id)" oncollapse="collapseCallback(index, id)">
 
@@ -10,21 +10,23 @@
         <v-pane-content id="{{ ::pane.id }}-content" aria-labelledby="{{ ::pane.id }}-header">
           <p>{{ ::pane.content }}</p>
 
-          <v-accordion id="nestedAccordionA" ng-if="pane.models">
+          <v-accordion id="{{ ::subpane.id }}" ng-if="pane.models"  onexpand="expandCallback(index, id)" oncollapse="collapseCallback(index, id)">
             <v-pane id="{{ ::subpane.id }}" ng-repeat="subpane in pane.models" ng-disabled="subpane.isDisabled">
               <v-pane-header id="{{ ::subpane.id }}-header" aria-controls="{{ ::subpane.id }}-header">
                 <h5>{{ ::subpane.header }}</h5>
               </v-pane-header>
               <v-pane-content id="{{ ::subpane.id }}-content" aria-labelledby="{{ ::subpane.id }}-content">
                 <p>{{ ::subpane.content }}</p>
+                <button id="{{ ::subpane.id }}" type="button" class="btn btn-primary" style="margin-bottom: 10px" data-toggle="modal" data-target="#execution" ng-hide="subpane.versions">Execution</button><br>
 
-                <v-accordion id="subnestedAccordionA" ng-if="subpane.versions">
-                  <v-pane id="{{ ::subsubpane.id }}" ng-repeat="subsubpane in subpane.versions" ng-disabled="subsubpane.isDisabled">4
+                <v-accordion id="{{::subsubpane.id}}" ng-if="subpane.versions" onexpand="expandCallback(index, id)" oncollapse="collapseCallback(index, id)">
+                  <v-pane id="{{ ::subsubpane.id }}" ng-repeat="subsubpane in subpane.versions" ng-disabled="subsubpane.isDisabled">
                     <v-pane-header id="{{ ::subsubpane.id }}-header" aria-controls="{{ ::subsubpane.id }}-header">
                       <h5>{{ ::subsubpane.header }}</h5>
                     </v-pane-header>
                     <v-pane-content id="{{ ::subsubpane.id }}-content" aria-labelledby="{{ ::subsubpane.id }}-content">
                       <p>{{ ::subsubpane.content }}</p>
+                      <button id="{{ ::subsubpane.id }}" type="button" class="btn btn-primary" style="margin-bottom: 10px" data-toggle="modal" data-target="#execution" >Execution</button><br>
                     </v-pane-content>
                   </v-pane>
                 </v-accordion>
@@ -35,18 +37,8 @@
 
         </v-pane-content>
       </v-pane>
-      <v-pane>
-        <v-pane-header>
-          <h5>Information</h5>
-        </v-pane-header>
-        <v-pane-content>
-          <button type="button" class="btn btn-primary" style="margin-bottom: 10px" data-toggle="modal" data-target="#execution">Execution</button><br>
-          <a class="btn btn-primary" ui-sref="viewSession" role="button">Results</a>
-        </v-pane-content>
-
-      </v-pane>
-
     </v-accordion>
+    <input type="hidden" ng-model="executionId">
   </div>
 
   <!--Flotant window-->
@@ -68,7 +60,7 @@
           <br><br>
           <div class="row">
             <label>Upload .zip</label>&nbsp;
-            <input id="input-file" type="file" class="file" data-show-preview="false" accept=".zip" file-model="file1" data-show-remove="false" data-show-upload="false">
+            <input id="input-file" type="file" class="file" data-show-preview="false" accept=".zip" file-model="fileZip" data-show-remove="false" data-show-upload="false">
           </div>
 
         </div>
