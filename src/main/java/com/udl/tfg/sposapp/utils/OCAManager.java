@@ -36,6 +36,8 @@ public class OCAManager {
 
     private Client client;
     VirtualMachinePool vmPool;
+    org.opennebula.client.vm.VirtualMachine virtualMachine;
+
 
     public void Initialize(){
         try {
@@ -84,11 +86,11 @@ public class OCAManager {
         }
     }
 
-    public String createNewVM(VirtualMachine vmInfo) throws Exception {
+    public org.opennebula.client.vm.VirtualMachine createNewVM(VirtualMachine vmInfo) throws Exception {
 
-        OneResponse newRc = Template.update(client, 45, "CPU = " + vmInfo.getrealCPUs() + " VCPU = " + vmInfo.getVirtualCPUs() + " MEMORY = " + vmInfo.getRam() + "\n",true);
-        int newId = Integer.parseInt(newRc.getMessage());
-        Template t = new Template(newId, client);
+        //OneResponse newRc = Template.update(client, 145, "CPU = " + vmInfo.getrealCPUs() + " VCPU = " + vmInfo.getVirtualCPUs() + " MEMORY = " + vmInfo.getRam() + "\n",true);
+        //int newId = Integer.parseInt(newRc.getMessage());
+        Template t = new Template(137, client);
 
         OneResponse rc = t.instantiate();
 
@@ -101,6 +103,7 @@ public class OCAManager {
 
         int newVMId = Integer.parseInt(rc.getMessage());
         org.opennebula.client.vm.VirtualMachine vm = new org.opennebula.client.vm.VirtualMachine(newVMId, client);
+        virtualMachine = vm;
 
         if(rc.isError())
         {
@@ -108,10 +111,8 @@ public class OCAManager {
             throw new Exception( rc.getErrorMessage() );
         }
 
-        String ip = GetIP(vm);
-        vmInfo.setApiID(newVMId);
-        virtualMachineRepository.save(vmInfo);
-        return ip;
+
+        return vm;
     }
 
     public void deleteVM(int vmID) throws Exception {
@@ -150,5 +151,88 @@ public class OCAManager {
                 break;
             }
         }
+    }
+    public void WaitUntilCreatedV2(String vmId) {
+
+        OneResponse rc = vmPool.info();
+        if(rc.isError())
+            try {
+                throw new Exception( rc.getErrorMessage() );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        org.opennebula.client.vm.VirtualMachine vm = vmPool.getById(Integer.parseInt(vmId));
+
+        System.out.println(vm.getName());
+
+        int attempts = 0;
+        System.out.println("here");
+        System.out.println(vmId);
+
+        while(attempts < 100){
+            System.out.println(attempts);
+            try {
+                System.out.println(vm.getName());
+                vm.info();
+                System.out.println("State: " + vm.lcmStateStr());
+                if(vm.lcmStateStr().equalsIgnoreCase("RUNNING")) {
+                    Thread.sleep(10000);
+                    break;
+                }
+
+                else{
+                    Thread.sleep(60000); //TODO Every 10 minutes, realize the consult of the machine state.
+                    attempts++;
+                }
+            }catch (Exception ex){
+                break;
+            }
+        }
+        try {
+            Thread.sleep(10000); //additional to ensure net is up
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void WaitUntilFinalV2(String vmId) throws InterruptedException {
+
+        OneResponse rc = vmPool.info();
+        if(rc.isError())
+            try {
+                throw new Exception( rc.getErrorMessage() );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        org.opennebula.client.vm.VirtualMachine vm = vmPool.getById(Integer.parseInt(vmId));
+
+        int attempts = 0;
+
+        while(true){
+            try {
+                vm.info();
+                System.out.println("State: " + vm.lcmStateStr());
+                if(vm.lcmStateStr().equalsIgnoreCase("LCM_INIT")) {
+                    rc = vm.delete();
+                    if (rc.isError())
+                        throw new Exception( rc.getErrorMessage() );
+
+                    break;
+                }
+
+                else{
+                    if (attempts >= 100) break;
+                    Thread.sleep(6000); //TODO Every 10 minutes, realize the consult of the machine state.
+                    attempts++;
+                }
+            }catch (Exception ex){
+                break;
+            }
+        }
+
     }
 }

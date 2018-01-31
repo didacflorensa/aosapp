@@ -3,7 +3,7 @@
   [
     {
       "id": "category-agriculture",
-      "header": "agriculture",
+      "header": "Agriculture",
       "models":
       [
         {
@@ -54,7 +54,7 @@
   },
   {
     "id": "category-electricity",
-    "header": "electricity",
+    "header": "Electricity",
     "models": [
       {
         "id": "chiara-model",
@@ -81,7 +81,7 @@
   },
   {
     "id": "category-cloud",
-    "header": "cloud",
+    "header": "Cloud",
     "models": [
       {
         "id": "category-cloud-GP",

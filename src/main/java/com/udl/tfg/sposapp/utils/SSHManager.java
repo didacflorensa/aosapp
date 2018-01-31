@@ -12,7 +12,7 @@ import java.util.Properties;
 public class SSHManager {
 
     @Value("${sshIdentityFile}")    private String sshIdentityFile;
-    @Value("${sshIdentityPass}")    private String sshIdentityPass;
+    //@Value("${sshIdentityPass}")    private String sshIdentityPass;
     @Value("${sshKnownHostsFile}")  private String sshKnownHostsFile;
     @Value("${localStorageFolder}") private String localStorageFolder;
     @Value("${sshStorageFolder}")   private String sshStorageFolder;
@@ -24,7 +24,8 @@ public class SSHManager {
             throw new IllegalStateException("SSHUtils has been already initialized");
 
         jSch = new JSch();
-        jSch.addIdentity(sshIdentityFile, sshIdentityPass);
+        //jSch.addIdentity(sshIdentityFile, sshIdentityPass);
+        jSch.addIdentity(sshIdentityFile);
         jSch.setKnownHosts(sshKnownHostsFile);
         System.out.println("JSCH Initialized");
     }
@@ -62,26 +63,20 @@ public class SSHManager {
         }
     }
 
-    public void SendFile(Session session, long id, File sourceFile) throws Exception {
-        if (sourceFile == null)
-            return;
-
-        String destPath = sshStorageFolder + "/" + String.valueOf(id) + "/" + sourceFile.getName();
-        SendFile(session, sourceFile.getPath(), destPath);
-    }
-
     public void SendFile(Session session, String sourcePath, String destPath) throws Exception {
         try {
             ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
             channelSftp.connect();
 
+            System.out.println(sourcePath);
+            System.out.println(destPath);
+            System.out.println("---------");
             File sourceFile = new File(sourcePath);
             File destFile = new File(destPath);
+
             if (!sourceFile.exists())
                 throw new FileNotFoundException("Invalid source path.");
-
-            ExecuteCommand(session, "mkdir -p " + destFile.getParent().replace('\\', '/'));
-            channelSftp.cd(destFile.getParent().replace('\\', '/'));
+            channelSftp.cd(destFile.getPath());
             channelSftp.put(new FileInputStream(sourceFile), sourceFile.getName(), ChannelSftp.OVERWRITE);
             channelSftp.disconnect();
         } catch (Exception e) {
@@ -94,17 +89,19 @@ public class SSHManager {
             ChannelExec channelExec = (ChannelExec) getChannel(session, "exec");
             System.out.println("Running command: " + command);
             BufferedReader in = new BufferedReader(new InputStreamReader(channelExec.getInputStream()));
-            channelExec.setCommand(". ~/.bashrc && " + command);
+            //channelExec.setCommand(". ~/.bashrc && " + command);
+            channelExec.setCommand(command);
             channelExec.setErrStream(System.err);
             channelExec.connect();
 
-            String output = "";
+            /*String output = "";
             String msg;
             while((msg = in.readLine()) != null){
                 System.out.println(msg);
                 output += msg;
-            }
+            }*/
 
+            String output="execution OK!";
             channelExec.disconnect();
             return output;
         } catch (Exception e){

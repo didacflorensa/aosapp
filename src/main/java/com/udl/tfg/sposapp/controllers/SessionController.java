@@ -1,39 +1,16 @@
 package com.udl.tfg.sposapp.controllers;
 
-import com.udl.tfg.sposapp.models.DataFile;
-import com.udl.tfg.sposapp.models.Parameters;
 import com.udl.tfg.sposapp.models.Session;
 import com.udl.tfg.sposapp.repositories.DataFileRepository;
 import com.udl.tfg.sposapp.repositories.ParametersRepository;
 import com.udl.tfg.sposapp.repositories.SessionRepository;
 import com.udl.tfg.sposapp.utils.*;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 @RepositoryRestController
 public class SessionController {
@@ -81,18 +58,39 @@ public class SessionController {
 
     @RequestMapping(value = "/session/execution", method = RequestMethod.POST)
     public @ResponseBody HttpEntity<Void> execution (@RequestParam(value = "id") String id,
-                                                     @RequestParam(value = "email") String email) {
+                                                     @RequestParam(value = "email") String email)
+    {
+        Session session = new Session();
+        session.setEmail(email);
+        session.setExecutionId(id);
 
         System.out.println("Email: " + email);
         System.out.println("Id: " + id);
 
-        runExecution(email, id);
+        runExecution(session);
 
         return ResponseEntity.ok().build();
     }
 
-    private void runExecution (String email, String id) {
-        new RunExecutionThread(email, id, executionManager, ocaManager, sshManager, sshStorageFolder);
+    private void runExecution (Session session) {
+
+        try {
+            System.out.println("runExecuton");
+            org.opennebula.client.vm.VirtualMachine vm = ocaManager.createNewVM(session.getVmConfig());
+            session.setVmId(vm.getId());
+            session.setIP(ocaManager.GetIP(vm));
+            System.out.println(session.getIP());
+            sessionRepository.save(session);
+
+            System.out.println("Run new VM");
+
+            new RunExecutionThread(session, sessionRepository, executionManager, ocaManager, sshManager, sshStorageFolder);
+
+            System.out.println("Execute");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /*@RequestMapping(value = "/session", method = RequestMethod.POST)

@@ -21,6 +21,10 @@ public class Session {
     @Email
     private String email;
 
+    @NotBlank(message = "You must provide a execution Id")
+    @Email
+    private String executionId;
+
     @NotNull(message = "You must choose a solution type")
     @Enumerated(EnumType.STRING)
     private SolutionType type;
@@ -48,6 +52,9 @@ public class Session {
     @JsonIgnore
     private boolean vmDestroyed = false;
 
+    private String vmId;
+
+
     public long getId() {
         return Id;
     }
@@ -58,6 +65,22 @@ public class Session {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
+    }
+
+    public String getVmId() {
+        return vmId;
+    }
+
+    public void setVmId (String vmId) {
+        this.vmId = vmId;
     }
 
     public SolutionType getType() {

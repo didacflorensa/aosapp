@@ -148,6 +148,7 @@ angular.module('sposApp')
     };
 
     //TODO create request on SessionController.java
+    //TODO Implement this request and test
     $scope.uploadFiles = function () {
       uploadFileToUrl($scope.fileZip, "http://localhost:8080/uploadFile");
     };

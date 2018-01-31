@@ -21,44 +21,43 @@ public class RunExecutionThread extends Thread {
     private String email;
     private String id;
 
-    public RunExecutionThread(String email, String id,
+    public RunExecutionThread(Session session, SessionRepository sessionRepository,
                               ExecutionManager executionManager, OCAManager ocaManager,
                               SSHManager sshManager, String sshStorageFolder) {
-        //this.sessionRepository = sessionRepository;
+        this.sessionRepository = sessionRepository;
         this.executionManager = executionManager;
         this.ocaManager = ocaManager;
         this.sshManager = sshManager;
-        //this.session = session;
+        this.session = session;
         this.sshStorageFolder = sshStorageFolder;
         this.vmIP = "";
-        this.email = email;
-        this.id = id;
+
     }
 
     public void run() {
         try {
-            if(id.equals("2SFVSC-model")){
+            if(session.getExecutionId().equals("2SFVSC-model")){
                 vmIP = "";
-                System.out.println("ID:" + id);
+                System.out.println("ID:" + session.getExecutionId());
             }
 
-            else if (id.equals("DASC-model-stochastic"))
+            else if (session.getExecutionId().equals("DASC-model-stochastic"))
                 vmIP = "";
-            else if (id.equals("DASC-model-deterministic"))
+            else if (session.getExecutionId().equals("DASC-model-deterministic"))
                 vmIP = "";
-            else if (id.equals("ODFP-deterministic"))
+            else if (session.getExecutionId().equals("ODFP-deterministic"))
                 vmIP = "";
-            else if (id.equals("ODFP-multistage"))
+            else if (session.getExecutionId().equals("ODFP-multistage"))
                 vmIP = "";
-            else if (id.equals("ODFP-multihorizon"))
+            else if (session.getExecutionId().equals("ODFP-multihorizon"))
                 vmIP = "";
-            else if (id.equals("chiara-model"))
+            else if (session.getExecutionId().equals("chiara-model"))
                 vmIP = "";
-            else if (id.equals("sam-model-deterministic"))
+            else if (session.getExecutionId().equals("sam-model-deterministic"))
                 vmIP = "";
-            else if (id.equals("sam-model-gt"))
+            else if (session.getExecutionId().equals("sam-model-gt"))
                 vmIP = "";
-            else if (id.equals("category-cloud-GP"))
+            else if (session.getExecutionId().equals("category-cloud-GP"))
                 vmIP = "";
 
 

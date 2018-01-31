@@ -1,8 +1,10 @@
 package com.udl.tfg.sposapp.utils;
-
 import com.udl.tfg.sposapp.models.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
 
 @Service
 public class ExecutionManager {
@@ -10,33 +12,69 @@ public class ExecutionManager {
     @Autowired
     private SSHManager sshManager;
 
-    private final String frontendIP = "192.168.101.95";
 
-    private String cplexMpsLp = "ts cplex-exec %1$s %2$s %3$s %4$s %5$s %6$s";
-    private String cplexDatMod = "ts cplex-opl %1$s %2$s %3$s %4$s %5$s %6$s %7$s";
-    private String gurobi = "ts gurobi-exec %1$s %2$s %3$s %4$s %5$s %6$s";
-    private String lpsolveMPS = "ts lpsolve-mps %1$s %2$s %3$s %4$s %5$s %6$s";
-    private String lpsolveLP = "ts lpsolve-lp %1$s %2$s %3$s %4$s %5$s %6$s";
+    @Value("${computingNode}")
+    private String computingNode;
+    @Value("${scriptsFolder}")
+    private String scriptsFolder;
+
 
     private com.jcraft.jsch.Session sshSession;
+
+
+    /*
+    * This functions is needed to create the user folder into the computing node.
+    * Opens a ssh session and executes the user-register.sh
+    */
+    public void launchExecution(Session session) throws Exception {
+
+        try {
+            System.out.println(session.getIP());
+            sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
+            String script = "/usr/local/pkgs/task-spooler-1.0/bin/ts " + scriptsFolder + "/full.sh %1$s %2$s %3$s %4$s";
+            //sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(), session.getFarm(), session.getDate(), session.getCensus()));
+            sshSession.disconnect();
+            sshSession = null;
+        } catch (Exception e) {
+            if (sshSession != null) sshSession.disconnect();
+            throw new Exception(e);
+        }
+
+    }
+
+    public void uploadFile(Session session) throws Exception {
+        // Todo: Path of the HD has to be in settings and imported from there.
+        /*try {
+            sshSession = sshManager.OpenSession(computingNode, 22, "root");
+
+            String destPath = "/media/farms/" + session.getEmail() + "/" + session.getFarm() + "/";
+            System.out.println(destPath);
+
+            for (int i=0; i < session.getFiles().size(); i++){
+                System.out.println(session.getFiles().get(i).getPath());
+                File file = new File(session.getFiles().get(i).getPath());
+                sshManager.SendFile(sshSession,file.getPath(), destPath);
+            }
+
+            // sshManager.SendFile(sshSession,sourceFile,destPath);
+            sshSession.disconnect();
+            sshSession = null;
+        } catch (Exception e) {
+            if (sshSession != null) sshSession.disconnect();
+            throw new Exception(e);
+        }*/
+
+    }
+
+
+}
+
+/*
 
     public void LaunchExecution(Session session) throws Exception {
         try {
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
-            switch (session.getInfo().getMethod().getMethod()) {
-                case CPLEX:
-                    runCplex(session);
-                    break;
-                case Gurobi:
-                    runGurobi(session);
-                    break;
-                case Lpsolve:
-                    runLpsolve(session);
-                    break;
-                default:
-                    System.out.println("UNKNOWN METHOD");
-                    break;
-            }
+            run(session,session.getInfo().getMethod().getMethod().name());
             sshSession.disconnect();
             sshSession = null;
         } catch (Exception e) {
@@ -45,24 +83,24 @@ public class ExecutionManager {
         }
     }
 
-    private void runCplex(Session session) throws Exception {
+
+    private void run (Session session, String solver) throws  Exception{
+        String script;
         if (session.getInfo().getFiles().size() > 1){
-            sshManager.ExecuteCommand(sshSession, String.format(cplexDatMod, session.getId(), session.getKey(),
-                    session.getEmail(), session.getInfo().getFiles().get(0).getName(), session.getInfo().getFiles().get(1).getName(), session.getMaximumDuration(), frontendIP));
+            if (session.getInfo().getFiles().get(0).getExtension().equals(".dat")) {
+                script = "ts " + scriptsFolder + "/"  +solver+ "/" + solver + "-pyomo %1$s %2$s %3$s %4$s %5$s %6$s %7$s";
+            } else {
+                script = "ts " + scriptsFolder + "/"  +solver+  "/" + solver + "-deco %1$s %2$s %3$s %4$s %5$s %6$s %7$s";
+            }
         } else {
-            sshManager.ExecuteCommand(sshSession, String.format(cplexMpsLp, session.getId(), session.getKey(), session.getEmail(), session.getInfo().getFiles().get(0).getName(), session.getMaximumDuration(), frontendIP));
+            if (session.getInfo().getFiles().get(0).getExtension().equals("mps")) {
+                script = "ts " + scriptsFolder + "/"  +solver+ "/" + solver + "-mps %1$s %2$s %3$s %4$s %5$s %6$s";
+            } else {
+                script = "ts " + scriptsFolder + "/"  +solver+  "/" + solver + "-lp %1$s %2$s %3$s %4$s %5$s %6$s";
+            }
         }
+        sshManager.ExecuteCommand(sshSession, String.format(script, session.getId(), session.getKey(), session.getEmail(), session.getInfo().getFiles().get(0).getName(), session.getMaximumDuration(), computingNode));
     }
 
-    private void runGurobi(Session session) throws Exception {
-        sshManager.ExecuteCommand(sshSession, String.format(gurobi, session.getId(), session.getKey(), session.getEmail(), session.getInfo().getFiles().get(0).getName(), session.getMaximumDuration(), frontendIP));
-    }
-
-    private void runLpsolve(Session session) throws Exception {
-        if (session.getInfo().getFiles().get(0).getExtension().equals("mps")){
-            sshManager.ExecuteCommand(sshSession, String.format(lpsolveMPS, session.getId(), session.getKey(), session.getEmail(), session.getInfo().getFiles().get(0).getName(), session.getMaximumDuration(), frontendIP));
-        } else {
-            sshManager.ExecuteCommand(sshSession, String.format(lpsolveLP, session.getId(), session.getKey(), session.getEmail(), session.getInfo().getFiles().get(0).getName(), session.getMaximumDuration(), frontendIP));
-        }
-    }
 }
+**/
