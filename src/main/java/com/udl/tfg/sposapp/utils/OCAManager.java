@@ -94,9 +94,11 @@ public class OCAManager {
 
         OneResponse rc = t.instantiate();
 
+        System.out.println("create 1");
+
         if( rc.isError() )
         {
-            System.out.println( "failed!");
+            System.out.println( "failed - 1!");
             System.out.println(rc.getMessage());
             throw new Exception( rc.getErrorMessage() );
         }
@@ -107,7 +109,7 @@ public class OCAManager {
 
         if(rc.isError())
         {
-            System.out.println("failed!");
+            System.out.println("failed! - 2");
             throw new Exception( rc.getErrorMessage() );
         }
 

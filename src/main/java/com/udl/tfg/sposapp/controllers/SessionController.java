@@ -77,6 +77,8 @@ public class SessionController {
         try {
             System.out.println("runExecuton");
             org.opennebula.client.vm.VirtualMachine vm = ocaManager.createNewVM(session.getVmConfig());
+            System.out.println("Create run Execution");
+            System.out.println(vm.getId());
             session.setVmId(vm.getId());
             session.setIP(ocaManager.GetIP(vm));
             System.out.println(session.getIP());

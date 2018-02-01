@@ -36,6 +36,11 @@ public class RunExecutionThread extends Thread {
 
     public void run() {
         try {
+
+
+            System.out.println("Inside Run thread");
+
+
             if(session.getExecutionId().equals("2SFVSC-model")){
                 vmIP = "";
                 System.out.println("ID:" + session.getExecutionId());
