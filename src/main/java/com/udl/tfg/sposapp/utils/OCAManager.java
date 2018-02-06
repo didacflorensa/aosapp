@@ -41,9 +41,9 @@ public class OCAManager {
 
     public void Initialize(){
         try {
-            System.out.println("OCA Manager created");
             client = new Client(user + ":" + pass, entryPoint);
             vmPool = new VirtualMachinePool(client);
+            System.out.println("OCA Manager created");
         } catch (ClientConfigurationException e) {
             e.printStackTrace();
         }
@@ -90,15 +90,15 @@ public class OCAManager {
 
         //OneResponse newRc = Template.update(client, 145, "CPU = " + vmInfo.getrealCPUs() + " VCPU = " + vmInfo.getVirtualCPUs() + " MEMORY = " + vmInfo.getRam() + "\n",true);
         //int newId = Integer.parseInt(newRc.getMessage());
-        Template t = new Template(137, client);
+        Template t = new Template(166, client);
 
         OneResponse rc = t.instantiate();
 
-        System.out.println("create 1");
+        System.out.println("create 1 - 166");
 
         if( rc.isError() )
         {
-            System.out.println( "failed - 1!");
+            System.out.println( "failed!");
             System.out.println(rc.getMessage());
             throw new Exception( rc.getErrorMessage() );
         }
@@ -109,7 +109,7 @@ public class OCAManager {
 
         if(rc.isError())
         {
-            System.out.println("failed! - 2");
+            System.out.println("failed!");
             throw new Exception( rc.getErrorMessage() );
         }
 
@@ -169,7 +169,6 @@ public class OCAManager {
         System.out.println(vm.getName());
 
         int attempts = 0;
-        System.out.println("here");
         System.out.println(vmId);
 
         while(attempts < 100){
@@ -179,12 +178,12 @@ public class OCAManager {
                 vm.info();
                 System.out.println("State: " + vm.lcmStateStr());
                 if(vm.lcmStateStr().equalsIgnoreCase("RUNNING")) {
-                    Thread.sleep(10000);
+                    Thread.sleep(180000);
                     break;
                 }
 
                 else{
-                    Thread.sleep(60000); //TODO Every 10 minutes, realize the consult of the machine state.
+                    Thread.sleep(30000); //TODO Every 10 minutes, realize the consult of the machine state.
                     attempts++;
                 }
             }catch (Exception ex){
@@ -217,7 +216,7 @@ public class OCAManager {
         while(true){
             try {
                 vm.info();
-                System.out.println("State: " + vm.lcmStateStr());
+                System.out.println("State (Final): " + vm.lcmStateStr());
                 if(vm.lcmStateStr().equalsIgnoreCase("LCM_INIT")) {
                     rc = vm.delete();
                     if (rc.isError())

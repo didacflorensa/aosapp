@@ -110,49 +110,35 @@ angular.module('sposApp')
       var email = $("#email").val();
       console.log(email + "id: " + $scope.executionId);
 
-        var config = {
-          headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}
-        };
+      uploadFiles(email, $scope.executionId);
 
-        var data = $.param({
-          id: $scope.executionId,
-          email: email
-        });
-
-        $http.post("http://localhost:8080/session/execution", data, config)
-          .success(function () {
-            console.log("Success");
-          });
     };
 
-    var uploadFileToUrl = function(file, uploadUrl){
-      var fd = new FormData();
 
-      console.log(file);
+    var uploadFiles = function (email, executionId) {
+      if ($scope.fileZip) {
+        var fd_zip = new FormData();
+        fd_zip.append('zip', $scope.fileZip);
 
-      return;
+        console.log("Upload File and start execution");
 
-      fd.append('fileZip', file);
-
-
-      $http.post(uploadUrl, fd, {
-        transformRequest: angular.identity,
-        headers: {'Content-Type': undefined}
-      })
-        .success(function(){
-          console.log("Success");
+        $http.post('http://localhost:8080/session/uploadAndExecution', fd_zip, {
+          transformRequest: angular.identity,
+          headers: {
+            'Content-Type': undefined
+          },
+          params: {
+            id: executionId,
+            email: email
+          }
         })
-        .error(function(){
-          console.log("Error");
-        });
+          .success(function () {
+            console.log("success")
+          })
+          .error(function () {
+          });
+      }
     };
-
-    //TODO create request on SessionController.java
-    //TODO Implement this request and test
-    $scope.uploadFiles = function () {
-      uploadFileToUrl($scope.fileZip, "http://localhost:8080/uploadFile");
-    };
-
 
 
 

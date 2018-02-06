@@ -1,5 +1,6 @@
 package com.udl.tfg.sposapp.controllers;
 
+import com.udl.tfg.sposapp.models.DataFile;
 import com.udl.tfg.sposapp.models.Session;
 import com.udl.tfg.sposapp.repositories.DataFileRepository;
 import com.udl.tfg.sposapp.repositories.ParametersRepository;
@@ -11,6 +12,20 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import javax.xml.crypto.Data;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @RepositoryRestController
 public class SessionController {
@@ -72,27 +87,100 @@ public class SessionController {
         return ResponseEntity.ok().build();
     }
 
+
+    @RequestMapping(value = "/session/uploadAndExecution", method = RequestMethod.POST)
+    public @ResponseBody HttpEntity<Void> uploadFile (MultipartHttpServletRequest request,
+                                                        @RequestParam(value = "id") String id,
+                                                        @RequestParam(value = "email") String email)
+    {
+        Session session = new Session();
+        session.setEmail(email);
+        session.setExecutionId(id);
+
+        System.out.println("Starting uploading file");
+        System.out.println("Email: " + email);
+        System.out.println("Id: " + id);
+        System.out.println("Receiving files");
+
+
+        List<DataFile> dataFiles = null;
+        try {
+            dataFiles = ParseFiles(request, session);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(dataFiles);
+        session.setFiles(dataFiles);
+        runExecution(session);
+        System.out.println("End uploading file and run execution");
+
+
+        return ResponseEntity.ok().build();
+
+    }
+
     private void runExecution (Session session) {
 
         try {
-            System.out.println("runExecuton");
             org.opennebula.client.vm.VirtualMachine vm = ocaManager.createNewVM(session.getVmConfig());
-            System.out.println("Create run Execution");
-            System.out.println(vm.getId());
             session.setVmId(vm.getId());
             session.setIP(ocaManager.GetIP(vm));
-            System.out.println(session.getIP());
-            sessionRepository.save(session);
+            //sessionRepository.save(session);
 
-            System.out.println("Run new VM");
-
-            new RunExecutionThread(session, sessionRepository, executionManager, ocaManager, sshManager, sshStorageFolder);
-
-            System.out.println("Execute");
+            new RunExecutionThread(session, sessionRepository, executionManager, ocaManager, sshManager, sshStorageFolder, "execution").start();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    private List<DataFile> ParseFiles(MultipartHttpServletRequest request, Session session) throws IOException {
+        Iterator<String> itr =  request.getFileNames();
+        List<DataFile> dataFiles = new ArrayList<>();
+        MultipartFile mpf;
+
+        //CleanSessionPath(session);
+
+        while(itr.hasNext()){
+            mpf = request.getFile(itr.next());
+
+            DataFile df = new DataFile();
+
+            String name = "template";
+            String path = localStorageFolder + "/" + name +".zip";
+            df.setPath(path);
+            df.setName(name);
+            df.setExtension(mpf.getOriginalFilename().split("\\.")[1]);
+
+            byte[] content = mpf.getBytes();
+            saveFile(df.getPath(), content);
+
+            dataFileRepository.save(df);
+            dataFiles.add(df);
+        }
+
+        return dataFiles;
+    }
+
+    private File saveFile(String path, byte[] bytes) throws IOException {
+        Path storagePath = Paths.get(path);
+
+        if (!Files.exists(storagePath.getParent())) {
+            Files.createDirectories(storagePath.getParent());
+        }
+
+        File infoFile = storagePath.toFile();
+        if (!infoFile.exists()) {
+            infoFile.createNewFile();
+        }
+
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(infoFile));
+        bufferedOutputStream.write(bytes);
+        bufferedOutputStream.flush();
+        bufferedOutputStream.close();
+        return infoFile;
     }
 
     /*@RequestMapping(value = "/session", method = RequestMethod.POST)

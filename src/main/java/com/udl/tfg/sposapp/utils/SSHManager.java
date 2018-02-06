@@ -31,6 +31,7 @@ public class SSHManager {
     }
 
     public Session OpenSession(String address, int port, String username) throws Exception {
+        System.out.println("openSession");
         return OpenSession(address, port, username, null);
     }
 
@@ -40,6 +41,7 @@ public class SSHManager {
             throw new NullPointerException("SSHUtils has not been initialized.");
 
         session = jSch.getSession(username, address, port);
+        System.out.println("openSession 2");
         try {
             Properties config = new Properties();
             if (properties != null)
@@ -47,6 +49,7 @@ public class SSHManager {
             config.put("StrictHostKeyChecking", "no");
             session.setConfig(config);
             session.setConfig(config);
+            System.out.println("Connect");
             session.connect();
             System.out.println("Session opened in " + address + " as " + username);
             return session;

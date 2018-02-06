@@ -31,8 +31,8 @@ public class ExecutionManager {
         try {
             System.out.println(session.getIP());
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
-            String script = "/usr/local/pkgs/task-spooler-1.0/bin/ts " + scriptsFolder + "/full.sh %1$s %2$s %3$s %4$s";
-            //sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(), session.getFarm(), session.getDate(), session.getCensus()));
+            String script = "/usr/local/pkgs/task-spooler-1.0/bin/ts " + scriptsFolder + "/launch.sh %1$s %2$s";
+            sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(),  session.getExecutionId()));
             sshSession.disconnect();
             sshSession = null;
         } catch (Exception e) {
@@ -44,10 +44,11 @@ public class ExecutionManager {
 
     public void uploadFile(Session session) throws Exception {
         // Todo: Path of the HD has to be in settings and imported from there.
-        /*try {
-            sshSession = sshManager.OpenSession(computingNode, 22, "root");
+        try {
+            System.out.println("Execution: " + session.getIP());
+            sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
 
-            String destPath = "/media/farms/" + session.getEmail() + "/" + session.getFarm() + "/";
+            String destPath = "/media/aos/sessions/" + session.getEmail();
             System.out.println(destPath);
 
             for (int i=0; i < session.getFiles().size(); i++){
@@ -56,13 +57,12 @@ public class ExecutionManager {
                 sshManager.SendFile(sshSession,file.getPath(), destPath);
             }
 
-            // sshManager.SendFile(sshSession,sourceFile,destPath);
             sshSession.disconnect();
             sshSession = null;
         } catch (Exception e) {
             if (sshSession != null) sshSession.disconnect();
             throw new Exception(e);
-        }*/
+        }
 
     }
 

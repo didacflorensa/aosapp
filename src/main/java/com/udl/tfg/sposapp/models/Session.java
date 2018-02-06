@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.security.SecureRandom;
+import java.util.List;
 
 @Entity
 public class Session {
@@ -54,6 +55,11 @@ public class Session {
 
     private String vmId;
 
+    @JsonIgnore
+    @ElementCollection
+    @OneToMany(cascade = {CascadeType.ALL})
+    public List<DataFile> files;
+
 
     public long getId() {
         return Id;
@@ -74,6 +80,17 @@ public class Session {
     public void setExecutionId(String executionId) {
         this.executionId = executionId;
     }
+
+    public List<DataFile> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<DataFile> files) {
+        this.files = files;
+    }
+
+    /*Final AOSAPP*/
+
 
     public String getVmId() {
         return vmId;
