@@ -48,7 +48,7 @@ public class ExecutionManager {
             System.out.println("Execution: " + session.getIP());
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
 
-            String destPath = "/media/aos/sessions/" + session.getEmail();
+            String destPath = "/media/aos/sessions/" + session.getEmail() + "/";
             System.out.println(destPath);
 
             for (int i=0; i < session.getFiles().size(); i++){

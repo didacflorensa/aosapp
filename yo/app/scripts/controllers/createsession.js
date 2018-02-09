@@ -110,10 +110,30 @@ angular.module('sposApp')
       var email = $("#email").val();
       console.log(email + "id: " + $scope.executionId);
 
-      uploadFiles(email, $scope.executionId);
+      createSession(email, $scope.executionId);
+
+      //uploadFiles(email, $scope.executionId);
 
     };
 
+    var createSession = function (email, executionId) {
+      var req = {
+        method: 'POST',
+        url: 'http://localhost:8080/session',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+        },
+        params: {
+          email: email
+        }
+      };
+
+      $http(req);
+
+      uploadFiles(email, executionId);
+
+
+    };
 
     var uploadFiles = function (email, executionId) {
       if ($scope.fileZip) {

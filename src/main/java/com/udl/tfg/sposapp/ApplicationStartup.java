@@ -68,7 +68,7 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
                 }
             }
 
-            public void run() {
+            /*public void run() {
                 while(true) {
                     for (Session session : sessionRepository.findAll()) {
                         if (!session.isVmDestroyed() && sessionsHasResults(session.getId()) && session.getVmConfig().getId() > 3) {
@@ -85,7 +85,7 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
                         e.printStackTrace();
                     }
                 }
-            }
+            }*/
 
         }.start();
     }

@@ -24,7 +24,7 @@ public class ResultsParser {
     @Autowired
     ResultRepository resultRepository;
 
-    public void ParseResults(Session session, String results) throws Exception {
+    /*public void ParseResults(Session session, String results) throws Exception {
         if (!results.equals("")) {
             Result executionResults = new Result();
             switch (session.getInfo().getMethod().getMethod()) {
@@ -277,5 +277,5 @@ public class ResultsParser {
         } else {
             return "";
         }
-    }
+    }*/
 }

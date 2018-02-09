@@ -1,5 +1,6 @@
 package com.udl.tfg.sposapp.controllers;
 
+import com.sun.org.apache.regexp.internal.RE;
 import com.udl.tfg.sposapp.models.DataFile;
 import com.udl.tfg.sposapp.models.Session;
 import com.udl.tfg.sposapp.repositories.DataFileRepository;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.xml.crypto.Data;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -24,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -71,20 +75,23 @@ public class SessionController {
     @Value("${localStorageFolder}") private String localStorageFolder;
     @Value("${sshStorageFolder}")   private String sshStorageFolder;
 
-    @RequestMapping(value = "/session/execution", method = RequestMethod.POST)
-    public @ResponseBody HttpEntity<Void> execution (@RequestParam(value = "id") String id,
-                                                     @RequestParam(value = "email") String email)
-    {
-        Session session = new Session();
-        session.setEmail(email);
-        session.setExecutionId(id);
 
-        System.out.println("Email: " + email);
-        System.out.println("Id: " + id);
+    @RequestMapping(value = "/session", method = RequestMethod.POST)
+    public @ResponseBody HttpEntity<Void> createSession(HttpServletRequest request, @RequestParam(value = "email") String email) throws Exception {
 
-        runExecution(session);
+        Session session = sessionRepository.findOne(email);
+
+        if(session == null) {
+            System.out.println("Creating user session");
+            session = new Session();
+            session.setEmail(email);
+        }
+
+        System.out.println("Storing user session");
+        sessionRepository.save(session);
 
         return ResponseEntity.ok().build();
+
     }
 
 
@@ -93,30 +100,36 @@ public class SessionController {
                                                         @RequestParam(value = "id") String id,
                                                         @RequestParam(value = "email") String email)
     {
-        Session session = new Session();
-        session.setEmail(email);
-        session.setExecutionId(id);
+        Session session = sessionRepository.findOne(email);
 
-        System.out.println("Starting uploading file");
-        System.out.println("Email: " + email);
-        System.out.println("Id: " + id);
-        System.out.println("Receiving files");
+        if (session != null) {
+            session.setEmail(email);
+            session.setExecutionId(id);
+
+            System.out.println("Starting uploading file");
+            System.out.println("Email: " + email);
+            System.out.println("Id: " + id);
+            System.out.println("Receiving files");
+
+            List<DataFile> dataFiles = null;
+            try {
+                dataFiles = ParseFiles(request, session);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(dataFiles);
+            session.setFiles(dataFiles);
+            runExecution(session);
+            System.out.println("End uploading file and run execution");
 
 
-        List<DataFile> dataFiles = null;
-        try {
-            dataFiles = ParseFiles(request, session);
-        } catch (IOException e) {
-            e.printStackTrace();
+            return ResponseEntity.ok().build();
         }
-
-        System.out.println(dataFiles);
-        session.setFiles(dataFiles);
-        runExecution(session);
-        System.out.println("End uploading file and run execution");
-
-
-        return ResponseEntity.ok().build();
+        else {
+            System.out.println("Session not found");
+            return ResponseEntity.notFound().build();
+        }
 
     }
 

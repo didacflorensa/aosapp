@@ -71,14 +71,29 @@ public class SSHManager {
             ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
             channelSftp.connect();
 
+
             System.out.println(sourcePath);
             System.out.println(destPath);
             System.out.println("---------");
             File sourceFile = new File(sourcePath);
             File destFile = new File(destPath);
+            SftpATTRS attrs=null;
 
             if (!sourceFile.exists())
                 throw new FileNotFoundException("Invalid source path.");
+
+            //Check if the user directory exist
+            try {
+                attrs = channelSftp.stat(destPath);
+            } catch (Exception e) {
+                System.out.println("Not found destpath:" + destPath);
+            }
+
+            //If not exist, create the directory
+            if (attrs == null) {
+                channelSftp.mkdir(destPath);
+            }
+
             channelSftp.cd(destFile.getPath());
             channelSftp.put(new FileInputStream(sourceFile), sourceFile.getName(), ChannelSftp.OVERWRITE);
             channelSftp.disconnect();
