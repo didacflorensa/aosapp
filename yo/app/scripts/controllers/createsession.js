@@ -68,55 +68,21 @@ angular.module('sposApp')
       console.log('accordionA is ready!');
     });
 
-
-   /* var json;
-    $http.get('resources/aos.json')
-      .then(function(res){
-        console.log(res.data);
-        json = res.data;
-        var categories = [];
-        var apps = [];
-        var models = [];
-
-        for (var c in json.models){
-          categories.push(c);
-          var temp_apps = [];
-          for(var app in json.models[c]){
-            temp_apps.push(app);
-            var temp_model = [];
-            for(var model in json.models[c][app]){
-              console.log(model);
-
-              console.log("----");
-              if (model !== "name"  & model !== "description"){
-                temp_model.push(model)
-              }
-            }
-            models.push(temp_model)
-          }
-          apps.push(temp_apps)
-        }
-
-        console.log(categories);
-        console.log(apps);
-        console.log(models);
-  });*/
-
-
-
+    //Launch execution
 
     $scope.execution = function () {
 
-      var email = $("#email").val();
-      console.log(email + "id: " + $scope.executionId);
+      createSession($scope.email);
 
-      createSession(email, $scope.executionId);
+      setTimeout(function () {
+        uploadFiles($scope.email, $scope.executionId);
+      }, 1000);
 
-      //uploadFiles(email, $scope.executionId);
 
     };
 
-    var createSession = function (email, executionId) {
+    var createSession = function (email) {
+
       var req = {
         method: 'POST',
         url: 'http://localhost:8080/session',
@@ -129,9 +95,6 @@ angular.module('sposApp')
       };
 
       $http(req);
-
-      uploadFiles(email, executionId);
-
 
     };
 
@@ -159,9 +122,5 @@ angular.module('sposApp')
           });
       }
     };
-
-
-
-
 
   });

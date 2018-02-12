@@ -31,7 +31,7 @@ public class ExecutionManager {
         try {
             System.out.println(session.getIP());
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
-            String script = "/usr/local/pkgs/task-spooler-1.0/bin/ts " + scriptsFolder + "/launch.sh %1$s %2$s";
+            String script = "ts " + scriptsFolder + "/launch.sh %1$s %2$s";
             sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(),  session.getExecutionId()));
             sshSession.disconnect();
             sshSession = null;
