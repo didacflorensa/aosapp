@@ -13,16 +13,6 @@
       <div class="panel-heading">Information summary</div>
       <div class="panel-body">
         <div class="col-sm-4">
-          <div id="session-vm" class="text-center">
-            <h4>Virtual Machine</h4>
-            <h5>Virtual CPUs: {{session.vmConfig.virtualCPUs}}</h5>
-            <h5>Memory: {{session.vmConfig.ram}} Mb</h5>
-            <h5>Real CPUs: {{session.vmConfig.realCPUs}}</h5>
-            <h5>IP:
-              <span ng-show="session.ip">{{session.ip}}</span>
-              <span ng-hide="session.ip">Not assigned yet</span>
-            </h5>
-          </div>
         </div>
 
         <div class="col-sm-4">
@@ -30,47 +20,24 @@
             <h4>Session</h4>
             <h5>ID: {{session.id}}</h5>
             <h5>Email: {{session.email}}</h5>
-            <h5>Solution Type: {{session.type}}</h5>
-            <h5 ng-show="session.type == 'Feasible'">Maximum duration: {{session.maximumDuration}}</h5>
-            <h5>Model: {{session.info.model.model}}</h5>
-            <h5>Method: {{session.info.method.method}}</h5>
+            <h5>Model: {{session.executionId}}</h5>
           </div>
         </div>
-
         <div class="col-sm-4">
-          <div id="session-extra" class="text-center">
-            <h4>Extra information</h4>
-            <h5>Parallelized:
-              <span ng-show="session.info.parallelized"><span class="glyphicon glyphicon-ok"></span></span>
-              <span ng-hide="session.info.parallelized"><span class="glyphicon glyphicon-remove"></span></span>
-            </h5>
-            <h5>Clustered:
-              <span ng-show="session.info.groupSize > 0"><span class="glyphicon glyphicon-ok"></span></span>
-              <span ng-hide="session.info.groupSize > 0"><span class="glyphicon glyphicon-remove"></span></span>
-            </h5>
-            <h5 ng-show="session.info.groupSize > 0">Nº of clusters: {{session.info.groupSize}}</h5>
-          </div>
         </div>
       </div>
+      </div>
+      <div id="downloadResults" class="panel panel-default" style="margin-top: 50px;">
+        <div class="panel-heading">Results <a style="color: #000;" ng-click="getFile()"></a></div>
+        <div class="panel-body">
+          <a><button class="btn btn-primary" ng-click="downloadResults()">Download Results</button></a>
+        </div>
       </div>
 
       <div id="session-input-row" class="panel panel-default" style="margin-top: 50px;">
-        <div class="panel-heading">Input file</div>
-        <div class="panel-body">
-          <h5 ng-show="files.length == 0">Loading input file... Please wait.</h5>
-          <div ng-repeat="file in files">
-            <div class="col-xs-6">
-              <span style="font-size: large; font-weight: 600">{{file.name}}</span>
-              <br>
-              <hm-read-more
-                hm-text="{{::file.content}}"
-                hm-limit="200"
-                hm-more-text="Show more"
-                hm-less-text="Show less"
-                hm-dots-class="dots"
-                hm-link-class="links"></hm-read-more>
-            </div>
-          </div>
+        <div class="panel-heading">Input file <a style="color: #000;" ng-click="getFile()"><span style="font-size: 15px; margin-left: 10px;" class="glyphicon glyphicon-refresh icon-refresh"></span></a></div>
+        <div class="panel-body" style="overflow-y: scroll;" ng-model="divFile" id="divFile">
+          <h5 ng-bind-html="loadingFile"></h5>
         </div>
       </div>
 

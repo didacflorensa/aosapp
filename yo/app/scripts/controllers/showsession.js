@@ -26,12 +26,44 @@ angular.module('sposApp')
       $scope.memData = [[]];
 
       $scope.showCharts = true;
+      $scope.loadingFile = "Loading input file... Please wait.";
+      $scope.divFile = "";
 
-      $scope.init = function () {
+
+    $scope.init = function () {
         ClearSession();
         $scope.logged = $scope.sessionKey && $scope.sessionId;
-        if ($scope.logged)
+        $scope.loadingFile
+        if ($scope.logged){
           GetSession();
+          GetResultFile();
+        }
+      };
+
+      var GetResultFile = function () {
+        $http.get('http://localhost:8080/session/' + $scope.sessionId + "/GetFileResults", "")
+          .then(function (resultData) {
+            console.log(resultData.data);
+            $scope.loadingFile = resultData.data;
+            angular.element('#divFile').css('height', '500px');
+          });
+      };
+
+      var DownloadResults = function () {
+        console.log("downloadFiles");
+        $http.get('http://localhost:8080/session/' + $scope.sessionId + "/DownloadResults", "")
+          .then(function (resultData) {
+              console.log("Download Succesfull");
+              console.log(resultData.data);
+          });
+      };
+
+      $scope.getFile = function () {
+        GetResultFile();
+      };
+
+      $scope.downloadResults = function () {
+        DownloadResults();
       };
 
       $scope.logInSession = function(){
@@ -45,9 +77,10 @@ angular.module('sposApp')
               $scope.logged = true;
               $scope.session = session;
 
+              GetResultFile();
               GetSessionStatus();
               if ($scope.files.length == 0) {
-                $http.get('http://193.144.12.55/session/' + $scope.sessionId + "/inputFiles?key=" + $scope.sessionKey, "")
+                $http.get('http://localhost:8080/session/' + $scope.sessionId + "/inputFiles?key=" + $scope.sessionKey, "")
                   .success(function (rawData, status) {
                     var files = rawData.split("//++//@^@//++//");
                     for (var i = 0; i < files.length; i++) {
@@ -60,7 +93,7 @@ angular.module('sposApp')
                   });
               }
               if ($scope.shortResults == "" && $scope.fullResults == "") {
-                $http.get('http://193.144.12.55/session/' + $scope.sessionId + "/results?key=" + $scope.sessionKey, "")
+                $http.get('http://localhost:8080/session/' + $scope.sessionId + "/results?key=" + $scope.sessionKey, "")
                   .success(function (resultData, status) {
                     GetResults(resultData);
                     GetChartsData(resultData);
@@ -131,10 +164,10 @@ angular.module('sposApp')
         if ($scope.session == null)
           result = "---------";
 
-        if ($scope.session.ip == null && $scope.shortResults == "")
+        if ($scope.session.IP == null && $scope.shortResults == "")
           result = $sce.trustAsHtml("<span style=\"color: #ff7f02;\"> Preparing </span>");
 
-        if ($scope.session.ip != null && $scope.shortResults == "")
+        if ($scope.session.IP != null && $scope.shortResults == "")
           result = $sce.trustAsHtml("<span style=\"color: #FFC107;\"> Executing </span>");
 
         if ($scope.shortResults != "" && $scope.shortResults != errorMsg)

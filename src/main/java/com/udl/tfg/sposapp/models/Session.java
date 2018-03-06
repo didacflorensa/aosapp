@@ -5,17 +5,24 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import javax.annotation.Generated;
 import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.UUID;
+
+import static javax.persistence.GenerationType.*;
 
 @Entity
 public class Session {
 
+
     @Id
-    @NotBlank(message = "You must provide a valid email address")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long Id;
+
     @Email
     private String email;
 
@@ -41,6 +48,14 @@ public class Session {
     @OneToMany(cascade = {CascadeType.ALL})
     public List<DataFile> files;
 
+
+    public Long getId() {
+        return Id;
+    }
+
+    public void setId(Long Id) {
+        this.Id = Id;
+    }
 
     public String getEmail() {
         return email;
@@ -84,6 +99,16 @@ public class Session {
     public void setVmConfig(VirtualMachine vmConfig) {
         this.vmConfig = vmConfig;
     }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+
 
     /*public SolutionType getType() {
         return type;
@@ -135,6 +160,17 @@ public class Session {
     public void setIP(@Nullable String IP) {
         this.IP = IP;
     }
+
+    public void generateKey(){
+        String AB = "123456789ABCDEFGHIJKLMNOPKRSTUVWYZabcdefghijklmnopkrstuvwyz";
+        SecureRandom rnd = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 16; i++){
+            sb.append(AB.charAt(rnd.nextInt(AB.length())));
+        }
+        this.key = sb.toString();
+    }
+
 
 
 }

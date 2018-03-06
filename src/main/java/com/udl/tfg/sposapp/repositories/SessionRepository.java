@@ -6,5 +6,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 
 @RepositoryRestResource(collectionResourceRel = "session", path = "session")
-public interface SessionRepository extends PagingAndSortingRepository<Session, String> {
+public interface SessionRepository extends PagingAndSortingRepository<Session, Long> {
 }

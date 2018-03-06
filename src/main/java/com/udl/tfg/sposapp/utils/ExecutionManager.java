@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class ExecutionManager {
@@ -66,6 +68,32 @@ public class ExecutionManager {
 
     }
 
+    public StringBuilder downloadFile(Session session) throws Exception {
+        StringBuilder results = new StringBuilder("");
+        try {
+            sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
+            String destPath = "/tmp/DASC/template/results/tmp/";
+
+            results = sshManager.GetFile(sshSession, destPath);
+
+            return results;
+
+        }catch(Exception e){
+            return results;
+        }
+    }
+
+    public ZipOutputStream downloadResults(Session session) throws Exception {
+        try {
+            System.out.println("Download 2");
+            sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
+            String destPath = "/media/aos/sessions/";
+            ZipOutputStream out = sshManager.DownloadResults(sshSession, destPath);
+            return out;
+        } catch(Exception e){
+            return null;
+        }
+    }
 
 }
 

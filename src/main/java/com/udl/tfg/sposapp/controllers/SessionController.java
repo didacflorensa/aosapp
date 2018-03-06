@@ -1,12 +1,13 @@
 package com.udl.tfg.sposapp.controllers;
 
-import com.sun.org.apache.regexp.internal.RE;
 import com.udl.tfg.sposapp.models.DataFile;
+import com.udl.tfg.sposapp.models.Mail;
 import com.udl.tfg.sposapp.models.Session;
 import com.udl.tfg.sposapp.repositories.DataFileRepository;
 import com.udl.tfg.sposapp.repositories.ParametersRepository;
 import com.udl.tfg.sposapp.repositories.SessionRepository;
 import com.udl.tfg.sposapp.utils.*;
+import org.hibernate.validator.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
@@ -18,18 +19,18 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.xml.crypto.Data;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 @RepositoryRestController
 public class SessionController {
@@ -77,38 +78,44 @@ public class SessionController {
 
 
     @RequestMapping(value = "/session", method = RequestMethod.POST)
-    public @ResponseBody HttpEntity<Void> createSession(HttpServletRequest request, @RequestParam(value = "email") String email) throws Exception {
+    public @ResponseBody HttpEntity<HashMap<String, String>> createSession(HttpServletRequest request, @Valid @RequestBody Session session) throws Exception {
 
-        Session session = sessionRepository.findOne(email);
-
-        if(session == null) {
-            System.out.println("Creating user session");
-            session = new Session();
-            session.setEmail(email);
+        if (session != null) {
+            System.out.println("Generating session key...");
+            session.generateKey();
+            sessionRepository.save(session);
+            System.out.println("Id: " + session.getId());
+            System.out.println("key: " + session.getKey());
+            return GeneratePostResponse(request, session);
+        } else {
+            throw new NullPointerException();
         }
 
-        System.out.println("Storing user session");
-        sessionRepository.save(session);
+    }
 
-        return ResponseEntity.ok().build();
-
+    private HttpEntity<HashMap<String, String>> GeneratePostResponse(HttpServletRequest request, @Valid @RequestBody Session session) {
+        HashMap<String, String> response = new HashMap<>();
+        response.put("id", String.valueOf(session.getId()));
+        response.put("key", session.getKey());
+        return ResponseEntity.created(URI.create(request.getRequestURL() + "/" + session.getId())).body(response);
     }
 
 
     @RequestMapping(value = "/session/uploadAndExecution", method = RequestMethod.POST)
     public @ResponseBody HttpEntity<Void> uploadFile (MultipartHttpServletRequest request,
                                                         @RequestParam(value = "id") String id,
+                                                        @RequestParam(value = "idExec") String idExec,
                                                         @RequestParam(value = "email") String email)
     {
-        Session session = sessionRepository.findOne(email);
+        Session session = sessionRepository.findOne(Long.parseLong(id));
 
         if (session != null) {
             session.setEmail(email);
-            session.setExecutionId(id);
+            session.setExecutionId(idExec);
 
             System.out.println("Starting uploading file");
             System.out.println("Email: " + email);
-            System.out.println("Id: " + id);
+            System.out.println("Id: " + idExec);
             System.out.println("Receiving files");
 
             List<DataFile> dataFiles = null;
@@ -120,8 +127,15 @@ public class SessionController {
 
             System.out.println(dataFiles);
             session.setFiles(dataFiles);
-            runExecution(session);
+            runExecution(session);//TODO Eliminate this comment
             System.out.println("End uploading file and run execution");
+
+            //Sendinf Mail
+            //System.out.println("Sending mail");
+            //Mail mail = new Mail ();
+            //mail.sendEmail("dflorensa@altersoftware.es", "aosApp", "Testing app email");
+
+            //System.out.println("email sended");
 
 
             return ResponseEntity.ok().build();
@@ -133,13 +147,59 @@ public class SessionController {
 
     }
 
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.GET)
+    public @ResponseBody Session getSession(@PathVariable String id, @RequestParam(value = "key", required = true) String key) throws Exception {
+        Session session = sessionRepository.findOne(Long.parseLong(id));
+        if (session == null)
+            throw new NullPointerException();
+
+        if (session.getKey().equals(key)) {
+            return session;
+        } else {
+            throw new InvalidKeyException();
+        }
+    }
+
+
+    @RequestMapping(value = "/session/{id}/GetFileResults", method = RequestMethod.GET)
+    public @ResponseBody String getFileResults (@PathVariable String id) throws Exception {
+        Session session = sessionRepository.findOne(Long.parseLong(id));
+        StringBuilder results;
+
+        if(session != null){
+            results = executionManager.downloadFile(session);
+        } else {
+            System.out.println("Session not found");
+            return "Error with File";
+        }
+
+        return results.toString();
+    }
+
+    @RequestMapping(value = "/session/{id}/DownloadResults", method = RequestMethod.GET)
+    public @ResponseBody ZipOutputStream downloadResults(@PathVariable String id) throws Exception {
+        System.out.println("Controller downloadresults");
+        Session session = sessionRepository.findOne(Long.parseLong(id));
+        ZipOutputStream out = null;
+        ZipFile zipFile;
+
+        if(session != null){
+            out = executionManager.downloadResults(session);
+        } else {
+            System.out.println("Session not found");
+        }
+
+        return out;
+    }
+
+
     private void runExecution (Session session) {
 
         try {
             org.opennebula.client.vm.VirtualMachine vm = ocaManager.createNewVM(session.getVmConfig());
             session.setVmId(vm.getId());
             session.setIP(ocaManager.GetIP(vm));
-            //sessionRepository.save(session);
+            sessionRepository.save(session);
 
             new RunExecutionThread(session, sessionRepository, executionManager, ocaManager, sshManager, sshStorageFolder, "execution").start();
 
@@ -195,6 +255,7 @@ public class SessionController {
         bufferedOutputStream.close();
         return infoFile;
     }
+
 
     /*@RequestMapping(value = "/session", method = RequestMethod.POST)
     public @ResponseBody HttpEntity<HashMap<String, String>> returnKey(HttpServletRequest request, @Valid @RequestBody Session session) throws Exception {

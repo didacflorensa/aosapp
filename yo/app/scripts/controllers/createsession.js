@@ -9,7 +9,7 @@
  */
 
 angular.module('sposApp')
-  .controller('CreateSessionCtrl', function ($scope, $q, $state, $http, $location) {
+  .controller('CreateSessionCtrl', function ($scope, $q, $state, $http, $location, VirtualMachine, Parameters, Session, fileReader, ModelInfo, MethodInfo) {
     $scope.vmConfig = {virtualCPUs:0, realCPUs:0, ram:0};
     $scope.parameters = {isClustered: false, files: []};
     $scope.session = {};
@@ -71,34 +71,18 @@ angular.module('sposApp')
     //Launch execution
 
     $scope.execution = function () {
+      Session.save($scope.session).$promise.then(function (session) {
+        $scope.sessionId = session.id;
+        $scope.sessionKey = session.key;
 
-      createSession($scope.email);
-
-      setTimeout(function () {
-        uploadFiles($scope.email, $scope.executionId);
-      }, 1000);
-
-
-    };
-
-    var createSession = function (email) {
-
-      var req = {
-        method: 'POST',
-        url: 'http://localhost:8080/session',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
-        },
-        params: {
-          email: email
-        }
-      };
-
-      $http(req);
+        uploadFiles (session.id, $scope.email, $scope.executionId);
+      }).catch(function (error) {
+        console.log("Error: " + error);
+      });
 
     };
 
-    var uploadFiles = function (email, executionId) {
+    var uploadFiles = function (id, email, executionId) {
       if ($scope.fileZip) {
         var fd_zip = new FormData();
         fd_zip.append('zip', $scope.fileZip);
@@ -111,7 +95,8 @@ angular.module('sposApp')
             'Content-Type': undefined
           },
           params: {
-            id: executionId,
+            id: id,
+            idExec: executionId,
             email: email
           }
         })

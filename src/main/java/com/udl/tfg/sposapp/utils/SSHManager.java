@@ -1,12 +1,19 @@
 package com.udl.tfg.sposapp.utils;
 
 import com.jcraft.jsch.*;
+import com.udl.tfg.sposapp.models.DataFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import sun.misc.IOUtils;
+import sun.nio.ch.IOUtil;
 
 import java.io.*;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+import java.util.regex.Pattern;
 
 @Service
 public class SSHManager {
@@ -58,6 +65,7 @@ public class SSHManager {
         }
     }
 
+
     public void CleanPath(Session session, String destPath) throws Exception {
         try {
             ExecuteCommand(session, "rm -rf " + destPath.replace('\\', '/'));
@@ -66,11 +74,55 @@ public class SSHManager {
         }
     }
 
-    public void SendFile(Session session, String sourcePath, String destPath) throws Exception {
+
+    public ZipOutputStream DownloadResults(Session session, String destPath) throws Exception {
+        ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
+        channelSftp.connect();
+
+        System.out.println("Get downlaod zip");
+        channelSftp.cd("/media/aos/sessions");
+        InputStream in = channelSftp.get("download.zip");
+        OutputStream out = null;
+        org.apache.tomcat.util.http.fileupload.IOUtils.copy(in, out);
+        ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+
+        return zipOutputStream;
+    }
+
+
+    public StringBuilder GetFile(Session session, String destPath) throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
         try {
+
             ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
             channelSftp.connect();
 
+            System.out.println("Get FILE LOG");
+            channelSftp.cd(destPath);
+            System.out.println("cd");
+            InputStream in = channelSftp.get("*.log");
+            System.out.println(".log");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            System.out.println(".log2");
+            String line = "";
+            System.out.println(".log4");
+
+            while ((line = reader.readLine()) != null)
+                stringBuilder.append(line + " <br> ");
+
+            System.out.println("FINAL FILE LOG");
+
+            return stringBuilder;
+        }catch (Exception e) {
+            return new StringBuilder("Error");
+        }
+    }
+
+    public void SendFile(Session session, String sourcePath, String destPath) throws Exception {
+        DataFile file = new DataFile();
+        try {
+            ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
+            channelSftp.connect();
 
             System.out.println(sourcePath);
             System.out.println(destPath);
@@ -112,16 +164,17 @@ public class SSHManager {
             channelExec.setErrStream(System.err);
             channelExec.connect();
 
-            /*String output = "";
+            String output = "";
             String msg;
-            while((msg = in.readLine()) != null){
+            System.out.println("ExecuteCommand: ");
+            /*while((msg = in.readLine()) != null){
                 System.out.println(msg);
                 output += msg;
             }*/
 
-            String output="execution OK!";
+            String output2="execution OK!";
             channelExec.disconnect();
-            return output;
+            return output2;
         } catch (Exception e){
             session.disconnect();
             throw new Exception(e);
@@ -136,4 +189,5 @@ public class SSHManager {
             throw new Exception("Channel type does not exist");
         return channel;
     }
+
 }
