@@ -21,6 +21,7 @@
             <h5>ID: {{session.id}}</h5>
             <h5>Email: {{session.email}}</h5>
             <h5>Model: {{session.executionId}}</h5>
+            <h5>State: {{session.executionState}}</h5>
           </div>
         </div>
         <div class="col-sm-4">
@@ -28,9 +29,9 @@
       </div>
       </div>
       <div id="downloadResults" class="panel panel-default" style="margin-top: 50px;">
-        <div class="panel-heading">Results <a style="color: #000;" ng-click="getFile()"></a></div>
+        <div class="panel-heading">Results </div>
         <div class="panel-body">
-          <a><button class="btn btn-primary" ng-click="downloadResults()">Download Results</button></a>
+          <a ng-click="downloadResults()"></a><button class="btn btn-primary" ng-click="downloadResults()">Download Results</button>
         </div>
       </div>
 

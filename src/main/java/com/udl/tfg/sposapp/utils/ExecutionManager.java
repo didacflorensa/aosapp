@@ -83,13 +83,13 @@ public class ExecutionManager {
         }
     }
 
-    public ZipOutputStream downloadResults(Session session) throws Exception {
+    public File downloadResults(Session session) throws Exception {
         try {
             System.out.println("Download 2");
-            sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
+            sshSession = sshManager.OpenSession("192.168.101.53", 22, "root");
             String destPath = "/media/aos/sessions/";
-            ZipOutputStream out = sshManager.DownloadResults(sshSession, destPath);
-            return out;
+            File out_file = sshManager.DownloadResults(sshSession, destPath);
+            return out_file;
         } catch(Exception e){
             return null;
         }

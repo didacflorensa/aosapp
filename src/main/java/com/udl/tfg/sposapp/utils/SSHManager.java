@@ -4,10 +4,14 @@ import com.jcraft.jsch.*;
 import com.udl.tfg.sposapp.models.DataFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import sun.misc.IOUtils;
 import sun.nio.ch.IOUtil;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.zip.ZipFile;
@@ -75,18 +79,68 @@ public class SSHManager {
     }
 
 
-    public ZipOutputStream DownloadResults(Session session, String destPath) throws Exception {
+    public File DownloadResults(Session session, String destPath) throws Exception {
         ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
         channelSftp.connect();
 
         System.out.println("Get downlaod zip");
         channelSftp.cd("/media/aos/sessions");
         InputStream in = channelSftp.get("download.zip");
-        OutputStream out = null;
-        org.apache.tomcat.util.http.fileupload.IOUtils.copy(in, out);
-        ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+        File ZipPackage = ParseFile(in);
 
-        return zipOutputStream;
+        return ZipPackage;
+    }
+
+    private File ParseFile(InputStream stream) {
+        MultipartFile mpf;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        DataFile df = new DataFile();
+        File file = null;
+
+        byte[] content;
+        try {
+            int reads = stream.read();
+            while (reads != -1)
+            {
+                out.write(reads);
+                reads = stream.read();
+            }
+            content = out.toByteArray();
+            String name = "download";
+            String path = localStorageFolder + "/" + name +".zip";
+            df.setPath(path);
+            df.setName(name);
+            file = saveFile(path, content);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+
+    }
+
+    private File saveFile(String path, byte[] bytes) throws IOException {
+
+
+        Path storagePath = Paths.get(path);
+
+        if (!Files.exists(storagePath.getParent())) {
+            Files.createDirectories(storagePath.getParent());
+        }
+
+        File file = storagePath.toFile();
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
+        bufferedOutputStream.write(bytes);
+        bufferedOutputStream.flush();
+        bufferedOutputStream.close();
+
+        return file;
     }
 
 
@@ -101,11 +155,8 @@ public class SSHManager {
             channelSftp.cd(destPath);
             System.out.println("cd");
             InputStream in = channelSftp.get("*.log");
-            System.out.println(".log");
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            System.out.println(".log2");
             String line = "";
-            System.out.println(".log4");
 
             while ((line = reader.readLine()) != null)
                 stringBuilder.append(line + " <br> ");

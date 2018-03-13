@@ -52,9 +52,31 @@ angular.module('sposApp')
       var DownloadResults = function () {
         console.log("downloadFiles");
         $http.get('http://localhost:8080/session/' + $scope.sessionId + "/DownloadResults", "")
-          .then(function (resultData) {
+          .then(function (resultData,status) {
+            console.log("status: " + status);
+            console.log("1: " + resultData); //TODO Teoricament hi ha el zip en l'objecte resultData
+            console.log("2: " + resultData.data); //TODO Aqui podem veure que es retorna el .zip
+
+            var linkElement = document.createElement('a');
+            try {
+              var blob = new Blob ([resultData], { type: 'content-type'});
+              var url = window.URL.createObjectURL(blob);
+
+              linkElement.setAttribute('href', url);
+              linkElement.setAttribute("download", resultData['x-filename']);
+
+              var clickEvent = new MouseEvent("click", {
+                "view": window,
+                "bubbles": true,
+                "cancelable": false
+              });
+
+              linkElement.dispatchEvent(clickEvent);
+            }catch(ex){
+              console.log(ex);
+            }
+
               console.log("Download Succesfull");
-              console.log(resultData.data);
           });
       };
 
@@ -63,6 +85,7 @@ angular.module('sposApp')
       };
 
       $scope.downloadResults = function () {
+        console.log("Dintre donwload");
         DownloadResults();
       };
 
@@ -164,13 +187,13 @@ angular.module('sposApp')
         if ($scope.session == null)
           result = "---------";
 
-        if ($scope.session.IP == null && $scope.shortResults == "")
+        if ($scope.session.IP == null && $scope.session.executionState == "P")
           result = $sce.trustAsHtml("<span style=\"color: #ff7f02;\"> Preparing </span>");
 
-        if ($scope.session.IP != null && $scope.shortResults == "")
+        if ($scope.session.IP != null && $scope.session.executionState == "R")
           result = $sce.trustAsHtml("<span style=\"color: #FFC107;\"> Executing </span>");
 
-        if ($scope.shortResults != "" && $scope.shortResults != errorMsg)
+        if ($scope.shortResults != "" && $scope.session.executionState == "F")
           result = $sce.trustAsHtml("<span style=\"color: #4CAF50;\"> Finished </span>");
 
         if (($scope.fullResults != "" && ($scope.fullResults.toLowerCase().indexOf("fatal") != -1))

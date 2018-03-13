@@ -3,6 +3,7 @@ package com.udl.tfg.sposapp.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Generated;
@@ -27,6 +28,10 @@ public class Session {
     private String email;
 
     private String executionId;
+
+    @Value("P")
+    private String executionState;
+
 
     @ManyToOne
     @RestResource(exported = false)
@@ -79,6 +84,15 @@ public class Session {
 
     public void setFiles(List<DataFile> files) {
         this.files = files;
+    }
+
+
+    public String getExecutionState() {
+        return executionState;
+    }
+
+    public void setExecutionState(String executionState) {
+        this.executionState = executionState;
     }
 
     /*Final AOSAPP*/

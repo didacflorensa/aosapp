@@ -12,12 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.*;
 import java.net.URI;
@@ -165,9 +168,17 @@ public class SessionController {
     public @ResponseBody String getFileResults (@PathVariable String id) throws Exception {
         Session session = sessionRepository.findOne(Long.parseLong(id));
         StringBuilder results;
+        String error_results = "Loading input file... Please wait.";
 
         if(session != null){
+            System.out.println("state: " + session.getExecutionState());
             results = executionManager.downloadFile(session);
+            if(results.equals("Error"))
+            {
+                return error_results;
+            }
+            session.setExecutionState("R");
+            sessionRepository.save(session);
         } else {
             System.out.println("Session not found");
             return "Error with File";
@@ -177,19 +188,33 @@ public class SessionController {
     }
 
     @RequestMapping(value = "/session/{id}/DownloadResults", method = RequestMethod.GET)
-    public @ResponseBody ZipOutputStream downloadResults(@PathVariable String id) throws Exception {
+    public @ResponseBody void downloadResults(HttpServletResponse response, @PathVariable String id) throws Exception {
         System.out.println("Controller downloadresults");
         Session session = sessionRepository.findOne(Long.parseLong(id));
-        ZipOutputStream out = null;
-        ZipFile zipFile;
+        System.out.println("ID: " + id);
+        File resuls_zip = null;
+        MultipartHttpServletRequest request = null;
 
         if(session != null){
-            out = executionManager.downloadResults(session);
+            resuls_zip = executionManager.downloadResults(session);
         } else {
             System.out.println("Session not found");
         }
+        System.out.println("Header: " );
 
-        return out;
+        response.setHeader("Content-Disposition", String.format("inline; filename=\""+resuls_zip.getName()+"\""));
+        response.addHeader("x-filename", resuls_zip.getName());
+
+        System.out.println("2: " );
+
+        response.setContentLength((int) resuls_zip.length());
+        System.out.println("Header3: " );
+
+        InputStream inputStream = new BufferedInputStream(new FileInputStream(resuls_zip));
+        FileCopyUtils.copy(inputStream, response.getOutputStream());
+        System.out.println("Header4 -final: " );
+
+
     }
 
 
