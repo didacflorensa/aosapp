@@ -76,6 +76,7 @@ angular.module('sposApp')
         $scope.sessionKey = session.key;
 
         uploadFiles (session.id, $scope.email, $scope.executionId);
+        alert("You will shortly receive and email to gain access to the results ");
       }).catch(function (error) {
         console.log("Error: " + error);
       });

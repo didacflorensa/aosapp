@@ -29,7 +29,6 @@ public class Session {
 
     private String executionId;
 
-    @Value("P")
     private String executionState;
 
 

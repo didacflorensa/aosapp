@@ -21,7 +21,9 @@
             <h5>ID: {{session.id}}</h5>
             <h5>Email: {{session.email}}</h5>
             <h5>Model: {{session.executionId}}</h5>
-            <h5>State: {{session.executionState}}</h5>
+            <h5 ng-show="statePrepared">Machine state: Preparing</h5>
+            <h5 ng-show="stateExectuion">Machine state: Execution</h5>
+            <h5 ng-show="stateFinished">Machine state: Finished</h5>
           </div>
         </div>
         <div class="col-sm-4">
@@ -31,18 +33,19 @@
       <div id="downloadResults" class="panel panel-default" style="margin-top: 50px;">
         <div class="panel-heading">Results </div>
         <div class="panel-body">
-          <a ng-click="downloadResults()"></a><button class="btn btn-primary" ng-click="downloadResults()">Download Results</button>
+          <a id="downloadZip" ng-hide="buttonDownload" ng-href="http://localhost:8080/session/{{session.id}}/DownloadResults" class="btn btn-primary" role="button" download="results.zip"> Download results</a>
+          <h5 ng-hide="messageDownload" id="message_results">You will can download the results when the execution finish</h5>
         </div>
       </div>
 
       <div id="session-input-row" class="panel panel-default" style="margin-top: 50px;">
-        <div class="panel-heading">Input file <a style="color: #000;" ng-click="getFile()"><span style="font-size: 15px; margin-left: 10px;" class="glyphicon glyphicon-refresh icon-refresh"></span></a></div>
+        <div class="panel-heading">Input file <a style="color: #000;" ng-click="getFile()"><span style="font-size: 15px; margin-left: 10px;" class="glyphicon glyphicon-refresh icon-refresh1"></span></a></div>
         <div class="panel-body" style="overflow-y: scroll;" ng-model="divFile" id="divFile">
           <h5 ng-bind-html="loadingFile"></h5>
         </div>
       </div>
 
-    <div id="session-output-row" class="panel panel-default" style="margin-top: 50px;">
+    <!--<div id="session-output-row" class="panel panel-default" style="margin-top: 50px;">
       <div class="panel-heading" style="height: 50px;">
         <div style="float: right;">
           <a ng-href="{{ url }}" ng-show="fullResults" class="btn btn-info" role="button" download="Execution_{{session.id}}_results.txt">Download full results</a>
@@ -80,7 +83,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div>-->
     </div>
 
   </div>

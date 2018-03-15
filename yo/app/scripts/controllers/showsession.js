@@ -11,6 +11,8 @@ angular.module('sposApp')
   .controller('ShowSessionCtrl', function ($scope, $sce, $http, $stateParams, Session) {
       $scope.sessionKey = $stateParams.key;
       $scope.sessionId = $stateParams.id;
+      $scope.sessionExecutionId = $stateParams.executionId;
+
       $scope.session = null;
       $scope.logged = false;
       $scope.loginError = "";
@@ -28,6 +30,11 @@ angular.module('sposApp')
       $scope.showCharts = true;
       $scope.loadingFile = "Loading input file... Please wait.";
       $scope.divFile = "";
+      $scope.messageDownload = false;
+      $scope.buttonDownload = true;
+      $scope.statePrepared = true;
+      $scope.stateExectuion = false;
+      $scope.stateFinished = false;
 
 
     $scope.init = function () {
@@ -41,56 +48,44 @@ angular.module('sposApp')
       };
 
       var GetResultFile = function () {
-        $http.get('http://localhost:8080/session/' + $scope.sessionId + "/GetFileResults", "")
-          .then(function (resultData) {
-            console.log(resultData.data);
-            $scope.loadingFile = resultData.data;
-            angular.element('#divFile').css('height', '500px');
-          });
+
+        if($scope.session.executionState == 'R'){
+          $http.get('http://localhost:8080/session/' + $scope.sessionId + "/GetFileResults", "")
+            .then(function (resultData) {
+              console.log(resultData.data);
+              $scope.loadingFile = resultData.data;
+              angular.element('#divFile').css('height', '500px');
+            });
+        }
+
+        else if($scope.session.executionState == 'F'){
+          $scope.loadingFile = "The execution is finalized. To see the results download them";
+          angular.element('#divFile').css('height', '70px');
+
+        }
+
       };
 
-      var DownloadResults = function () {
-        console.log("downloadFiles");
-        $http.get('http://localhost:8080/session/' + $scope.sessionId + "/DownloadResults", "")
-          .then(function (resultData,status) {
-            console.log("status: " + status);
-            console.log("1: " + resultData); //TODO Teoricament hi ha el zip en l'objecte resultData
-            console.log("2: " + resultData.data); //TODO Aqui podem veure que es retorna el .zip
-
-            var linkElement = document.createElement('a');
-            try {
-              var blob = new Blob ([resultData], { type: 'content-type'});
-              var url = window.URL.createObjectURL(blob);
-
-              linkElement.setAttribute('href', url);
-              linkElement.setAttribute("download", resultData['x-filename']);
-
-              var clickEvent = new MouseEvent("click", {
-                "view": window,
-                "bubbles": true,
-                "cancelable": false
-              });
-
-              linkElement.dispatchEvent(clickEvent);
-            }catch(ex){
-              console.log(ex);
-            }
-
-              console.log("Download Succesfull");
-          });
-      };
-
-      $scope.getFile = function () {
-        GetResultFile();
-      };
-
-      $scope.downloadResults = function () {
-        console.log("Dintre donwload");
-        DownloadResults();
-      };
 
       $scope.logInSession = function(){
         GetSession();
+      };
+
+      $scope.getFile = function(){
+        ClearSession();
+        $scope.logged = $scope.sessionKey && $scope.sessionId;
+        $scope.loadingFile
+        if ($scope.logged){
+          GetSession();
+          GetResultFile();
+        }
+        var $icon = document.getElementsByClassName("icon-refresh"),
+          animateClass = "icon-refresh-animate";
+        $(".icon-refresh1").addClass( animateClass );
+        window.setTimeout( function() {
+          $(".icon-refresh1").removeClass( animateClass );
+        }, 2000 );
+
       };
 
       var GetSession = function () {
@@ -187,14 +182,29 @@ angular.module('sposApp')
         if ($scope.session == null)
           result = "---------";
 
-        if ($scope.session.IP == null && $scope.session.executionState == "P")
+        if ($scope.session.executionState == "P"){
           result = $sce.trustAsHtml("<span style=\"color: #ff7f02;\"> Preparing </span>");
+          $scope.statePrepared = true;
+          $scope.stateExectuion = false;
+          $scope.stateFinished = false;
+        }
 
-        if ($scope.session.IP != null && $scope.session.executionState == "R")
+        if ($scope.session.executionState == "R"){
           result = $sce.trustAsHtml("<span style=\"color: #FFC107;\"> Executing </span>");
+          $scope.statePrepared = false;
+          $scope.stateExectuion = true;
+          $scope.stateFinished = false;
+        }
 
-        if ($scope.shortResults != "" && $scope.session.executionState == "F")
+        if ($scope.session.executionState == "F"){
           result = $sce.trustAsHtml("<span style=\"color: #4CAF50;\"> Finished </span>");
+          $scope.messageDownload = true;
+          $scope.buttonDownload = false;
+
+          $scope.statePrepared = false;
+          $scope.stateExectuion = false;
+          $scope.stateFinished = true;
+        }
 
         if (($scope.fullResults != "" && ($scope.fullResults.toLowerCase().indexOf("fatal") != -1))
               || ($scope.fullResults != "" && $scope.shortResults == errorMsg)) {

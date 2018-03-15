@@ -20,6 +20,9 @@ public class ExecutionManager {
     @Value("${scriptsFolder}")
     private String scriptsFolder;
 
+    @Value("${storageNode}")
+    private String storageNode;
+
 
     private com.jcraft.jsch.Session sshSession;
 
@@ -33,8 +36,8 @@ public class ExecutionManager {
         try {
             System.out.println(session.getIP());
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
-            String script = "ts " + scriptsFolder + "/launch.sh %1$s %2$s";
-            sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(),  session.getExecutionId()));
+            String script = "ts " + scriptsFolder + "/launch.sh %1$s %2$s %3$s";
+            sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(), session.getId(), session.getExecutionId()));
             sshSession.disconnect();
             sshSession = null;
         } catch (Exception e) {
@@ -85,9 +88,8 @@ public class ExecutionManager {
 
     public File downloadResults(Session session) throws Exception {
         try {
-            System.out.println("Download 2");
-            sshSession = sshManager.OpenSession("192.168.101.53", 22, "root");
-            String destPath = "/media/aos/sessions/";
+            sshSession = sshManager.OpenSession(storageNode, 22, "root");
+            String destPath = "/media/aos/sessions/"+session.getEmail()+"/" + session.getId()+"/";
             File out_file = sshManager.DownloadResults(sshSession, destPath);
             return out_file;
         } catch(Exception e){

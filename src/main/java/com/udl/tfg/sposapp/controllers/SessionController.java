@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -76,6 +77,9 @@ public class SessionController {
     @Autowired
     private OCAManager ocaManager;
 
+    @Autowired
+    ServletContext context;
+
     @Value("${localStorageFolder}") private String localStorageFolder;
     @Value("${sshStorageFolder}")   private String sshStorageFolder;
 
@@ -86,6 +90,7 @@ public class SessionController {
         if (session != null) {
             System.out.println("Generating session key...");
             session.generateKey();
+            session.setExecutionState("P");
             sessionRepository.save(session);
             System.out.println("Id: " + session.getId());
             System.out.println("key: " + session.getKey());
@@ -173,12 +178,12 @@ public class SessionController {
         if(session != null){
             System.out.println("state: " + session.getExecutionState());
             results = executionManager.downloadFile(session);
-            if(results.equals("Error"))
+            System.out.println("results: " + results);
+            if(results.equals("Error") || results.equals(""))
             {
                 return error_results;
             }
-            session.setExecutionState("R");
-            sessionRepository.save(session);
+
         } else {
             System.out.println("Session not found");
             return "Error with File";
@@ -195,26 +200,38 @@ public class SessionController {
         File resuls_zip = null;
         MultipartHttpServletRequest request = null;
 
-        if(session != null){
+        if (session != null) {
             resuls_zip = executionManager.downloadResults(session);
+
+            if (resuls_zip.exists()) {
+                String mimeType = context.getMimeType(resuls_zip.getPath());
+
+                if (mimeType == null) {
+                    mimeType = "application/octet-stream";
+                }
+
+                response.setContentType(mimeType);
+                response.addHeader("Content-Disposition", "attachment; filename=" + resuls_zip.getName());
+                response.setContentLength((int) resuls_zip.length());
+
+                OutputStream os = response.getOutputStream();
+                FileInputStream fis = new FileInputStream(resuls_zip);
+                byte[] buffer = new byte[4096];
+                int b = -1;
+
+                while ((b = fis.read(buffer)) != -1) {
+                    os.write(buffer, 0, b);
+                }
+
+                fis.close();
+                os.close();
+            } else {
+                System.out.println("Requested " + resuls_zip + " file not found!!");
+            }
+
         } else {
             System.out.println("Session not found");
         }
-        System.out.println("Header: " );
-
-        response.setHeader("Content-Disposition", String.format("inline; filename=\""+resuls_zip.getName()+"\""));
-        response.addHeader("x-filename", resuls_zip.getName());
-
-        System.out.println("2: " );
-
-        response.setContentLength((int) resuls_zip.length());
-        System.out.println("Header3: " );
-
-        InputStream inputStream = new BufferedInputStream(new FileInputStream(resuls_zip));
-        FileCopyUtils.copy(inputStream, response.getOutputStream());
-        System.out.println("Header4 -final: " );
-
-
     }
 
 

@@ -84,8 +84,8 @@ public class SSHManager {
         channelSftp.connect();
 
         System.out.println("Get downlaod zip");
-        channelSftp.cd("/media/aos/sessions");
-        InputStream in = channelSftp.get("download.zip");
+        channelSftp.cd(destPath);
+        InputStream in = channelSftp.get("results.zip");
         File ZipPackage = ParseFile(in);
 
         return ZipPackage;
@@ -154,7 +154,16 @@ public class SSHManager {
             System.out.println("Get FILE LOG");
             channelSftp.cd(destPath);
             System.out.println("cd");
-            InputStream in = channelSftp.get("*.log");
+
+            InputStream in = null;
+
+            try {
+                in = channelSftp.get("*.log");
+            }catch (Exception e){
+                return new StringBuilder("Loading input files... Please wait");
+            }
+
+
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line = "";
 

@@ -49,8 +49,17 @@ public class RunExecutionThread extends Thread {
 
                 executionManager.launchExecution(session);
 
+                sleep(65000);
+
+                session.setExecutionState("R");
+                sessionRepository.save(session);
+
                 ocaManager.WaitUntilFinalV2(session.getVmId());
 
+                System.out.println("Fin de la ejecución");
+
+                session.setExecutionState("F");
+                sessionRepository.save(session);
             }
 
         } catch (Exception e) {
