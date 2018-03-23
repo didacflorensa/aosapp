@@ -8,7 +8,7 @@
  * Controller of the sposApp
  */
 angular.module('sposApp')
-  .controller('ShowSessionCtrl', function ($scope, $sce, $http, $stateParams, Session) {
+  .controller('ShowSessionCtrl', function ($scope, $sce, $http, $stateParams, Session, envService) {
       $scope.sessionKey = $stateParams.key;
       $scope.sessionId = $stateParams.id;
       $scope.sessionExecutionId = $stateParams.executionId;
@@ -35,12 +35,18 @@ angular.module('sposApp')
       $scope.statePrepared = true;
       $scope.stateExectuion = false;
       $scope.stateFinished = false;
+      $scope.urlEnvironment = "";
+
 
 
     $scope.init = function () {
         ClearSession();
         $scope.logged = $scope.sessionKey && $scope.sessionId;
         $scope.loadingFile
+        $scope.urlEnvironment = getUrlEnvironment($scope.environment);
+
+        console.log("env: " + $scope.urlEnvironment);
+
         if ($scope.logged){
           GetSession();
           GetResultFile();
@@ -50,7 +56,7 @@ angular.module('sposApp')
       var GetResultFile = function () {
 
         if($scope.session.executionState == 'R'){
-          $http.get('http://localhost:8080/session/' + $scope.sessionId + "/GetFileResults", "")
+          $http.get($scope.urlEnvironment + '/session/' + $scope.sessionId + "/GetFileResults", "")
             .then(function (resultData) {
               console.log(resultData.data);
               $scope.loadingFile = resultData.data;
@@ -98,7 +104,7 @@ angular.module('sposApp')
               GetResultFile();
               GetSessionStatus();
               if ($scope.files.length == 0) {
-                $http.get('http://localhost:8080/session/' + $scope.sessionId + "/inputFiles?key=" + $scope.sessionKey, "")
+                $http.get($scope.urlEnvironment + '/session/' + $scope.sessionId + "/inputFiles?key=" + $scope.sessionKey, "")
                   .success(function (rawData, status) {
                     var files = rawData.split("//++//@^@//++//");
                     for (var i = 0; i < files.length; i++) {
@@ -239,6 +245,19 @@ angular.module('sposApp')
       };
 
       $scope.init();
+
+    function getUrlEnvironment(environment) {
+
+      if (environment === 'development'){
+        return 'http://localhost:8080'
+      }
+      else if (environment === 'production'){
+        return 'http://193.144.12.55:4000'
+      }
+      else {
+        return 'http://localhost:8080'
+      }
+    }
   })
   .config(['$compileProvider',
     function ($compileProvider) {

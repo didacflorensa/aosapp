@@ -178,7 +178,7 @@ public class SSHManager {
         }
     }
 
-    public void SendFile(Session session, String sourcePath, String destPath) throws Exception {
+    public void SendFile(Session session, String sourcePath, String destPath, String destPathSession) throws Exception {
         DataFile file = new DataFile();
         try {
             ChannelSftp channelSftp = (ChannelSftp) getChannel(session, "sftp");
@@ -188,8 +188,9 @@ public class SSHManager {
             System.out.println(destPath);
             System.out.println("---------");
             File sourceFile = new File(sourcePath);
-            File destFile = new File(destPath);
+            File destFile = new File(destPathSession);
             SftpATTRS attrs=null;
+            SftpATTRS attrsSession=null;
 
             if (!sourceFile.exists())
                 throw new FileNotFoundException("Invalid source path.");
@@ -201,9 +202,20 @@ public class SSHManager {
                 System.out.println("Not found destpath:" + destPath);
             }
 
+            try {
+                attrsSession = channelSftp.stat(destPathSession);
+            } catch (Exception e) {
+                System.out.println("Not found destpath:" + destPathSession);
+            }
+
             //If not exist, create the directory
             if (attrs == null) {
                 channelSftp.mkdir(destPath);
+            }
+
+            //If not exist session, create the directory
+            if (attrsSession == null) {
+                channelSftp.mkdir(destPathSession);
             }
 
             channelSftp.cd(destFile.getPath());

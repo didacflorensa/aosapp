@@ -15,8 +15,6 @@ public class ExecutionManager {
     private SSHManager sshManager;
 
 
-    @Value("${computingNode}")
-    private String computingNode;
     @Value("${scriptsFolder}")
     private String scriptsFolder;
 
@@ -36,8 +34,8 @@ public class ExecutionManager {
         try {
             System.out.println(session.getIP());
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
-            String script = "ts " + scriptsFolder + "/launch.sh %1$s %2$s %3$s";
-            sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(), session.getId(), session.getExecutionId()));
+            String script = "ts " + scriptsFolder + "/launch.sh %1$s %2$s %3$s %4$s";
+            sshManager.ExecuteCommand(sshSession, String.format(script, session.getEmail(), session.getId(), session.getExecutionId(), session.getKey()));
             sshSession.disconnect();
             sshSession = null;
         } catch (Exception e) {
@@ -54,12 +52,13 @@ public class ExecutionManager {
             sshSession = sshManager.OpenSession(session.getIP(), 22, "root");
 
             String destPath = "/media/aos/sessions/" + session.getEmail() + "/";
+            String destPathSession = "/media/aos/sessions/" + session.getEmail() + "/" + session.getId() + "/";
             System.out.println(destPath);
 
             for (int i=0; i < session.getFiles().size(); i++){
                 System.out.println(session.getFiles().get(i).getPath());
                 File file = new File(session.getFiles().get(i).getPath());
-                sshManager.SendFile(sshSession,file.getPath(), destPath);
+                sshManager.SendFile(sshSession,file.getPath(), destPath, destPathSession);
             }
 
             sshSession.disconnect();

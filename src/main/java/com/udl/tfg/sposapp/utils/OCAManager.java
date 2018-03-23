@@ -90,11 +90,11 @@ public class OCAManager {
 
         //OneResponse newRc = Template.update(client, 145, "CPU = " + vmInfo.getrealCPUs() + " VCPU = " + vmInfo.getVirtualCPUs() + " MEMORY = " + vmInfo.getRam() + "\n",true);
         //int newId = Integer.parseInt(newRc.getMessage());
-        Template t = new Template(166, client);
+        Template t = new Template(181, client);
 
         OneResponse rc = t.instantiate();
 
-        System.out.println("create 1 - 166");
+        System.out.println("create 1 - 181");
 
         if( rc.isError() )
         {
@@ -219,8 +219,9 @@ public class OCAManager {
                 System.out.println("State (Final): " + vm.lcmStateStr());
                 if(vm.lcmStateStr().equalsIgnoreCase("LCM_INIT")) {
                     rc = vm.delete();
-                    if (rc.isError())
+                    if (rc.isError()){
                         throw new Exception( rc.getErrorMessage() );
+                    }
 
                     break;
                 }

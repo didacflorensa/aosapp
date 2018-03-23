@@ -20,9 +20,11 @@ angular
     'hm.readmore',
     'chart.js',
     'rzModule',
-    'vAccordion'
+    'vAccordion',
+    'environment'
   ])
-  .config(function ($stateProvider) {
+  .config(function ($stateProvider, envServiceProvider) {
+
     $stateProvider
       .state('home', {
         url: '/',
@@ -43,18 +45,46 @@ angular
         url: '/session/view/:id?key',
         templateUrl: 'views/show-session.html',
         controller: 'ShowSessionCtrl'
+
       })
       .state('contact', {
         url: '/contact',
         templateUrl: 'views/contact.html',
         controller: 'ContactCtrl'
+
       })
       .state('about', {
         url: '/about',
         templateUrl: 'views/about.html',
         controller: 'AboutCtrl'
-      })
+
+      });
+
+    envServiceProvider.config({
+      domains: {
+        development: ['localhost'],
+        production: ['stormy02.udl.cat']
+      },
+      vars: {
+        development: {
+          apiUrl: 'http://localhost:8080',
+          staticUrl: 'http://localhost:8080'
+        },
+        production: {
+          apiUrl: 'http://192.143.12.55:4000',
+          staticUrl: 'http://192.143.12.55:4000'
+        }
+      }
+
+    });
+
+    envServiceProvider.check();
+
+
   })
+
+
+
       .run(function ($state) {
         $state.go('home');
       });

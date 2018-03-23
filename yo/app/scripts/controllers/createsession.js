@@ -9,44 +9,22 @@
  */
 
 angular.module('sposApp')
-  .controller('CreateSessionCtrl', function ($scope, $q, $state, $http, $location, VirtualMachine, Parameters, Session, fileReader, ModelInfo, MethodInfo) {
+
+  .controller('CreateSessionCtrl', function ($scope, $q, $state, $http, $location, envService, VirtualMachine, Parameters, Session) {
     $scope.vmConfig = {virtualCPUs:0, realCPUs:0, ram:0};
     $scope.parameters = {isClustered: false, files: []};
     $scope.session = {};
 
-    $scope.CreateState = {
-      FIRSTSTEP: 1,
-      SECONDSTEP: 2,
-      CREATING: 3,
-      CREATED: 4,
-      ERROR: 5
-    };
-
-    $scope.CreateStep = {
-      CREATING_SESSION: 1,
-      UPLOADING_FILE: 2
-    };
-
-    $scope.MethodLoadState = {
-      NONLOADED: 1,
-      LOADING: 2,
-      LOADED: 3,
-      ERROR: 4
-    };
-
     $scope.location = $location;
-    $scope.predefinedVM = "";
-    $scope.createStep = $scope.CreateStep.CREATING_SESSION;
-    $scope.state = $scope.CreateState.FIRSTSTEP;
-    $scope.methodLoadState = $scope.MethodLoadState.NONLOADED;
-    $scope.uploadMessage = "";
-    $scope.selectedModel = "";
-    $scope.selectedMethod = "";
-    $scope.errorFile = "";
-    $scope.problemType = "";
 
     $scope.sessionKey = "";
     $scope.sessionId = "";
+
+    $scope.environment = envService.get(); // store the current environment
+    $scope.vars = envService.read();
+
+
+    $scope.urlEnvironment = getUrlEnvironment($scope.environment);
 
 
     $http.get('resources/aos.json')
@@ -75,8 +53,13 @@ angular.module('sposApp')
         $scope.sessionId = session.id;
         $scope.sessionKey = session.key;
 
+        console.log("Id: " +session.id);
+        console.log("key: " +session.key);
+
+
         uploadFiles (session.id, $scope.email, $scope.executionId);
-        alert("You will shortly receive and email to gain access to the results ");
+        window.alert("To enter for your private area\n Session ID: " + session.id + "\n Key: " + session.key);
+
       }).catch(function (error) {
         console.log("Error: " + error);
       });
@@ -89,8 +72,9 @@ angular.module('sposApp')
         fd_zip.append('zip', $scope.fileZip);
 
         console.log("Upload File and start execution");
+        console.log("env: " + $scope.urlEnvironment);
 
-        $http.post('http://localhost:8080/session/uploadAndExecution', fd_zip, {
+        $http.post($scope.urlEnvironment + '/session/uploadAndExecution', fd_zip, {
           transformRequest: angular.identity,
           headers: {
             'Content-Type': undefined
@@ -101,12 +85,23 @@ angular.module('sposApp')
             email: email
           }
         })
-          .success(function () {
-            console.log("success")
+          .then(function () {
+            console.log("success");
           })
-          .error(function () {
-          });
       }
     };
+
+    function getUrlEnvironment(environment) {
+
+      if (environment === 'development'){
+        return 'http://localhost:8080'
+      }
+      else if (environment === 'production'){
+        return 'http://193.144.12.55:4000'
+      }
+      else {
+        return 'http://localhost:8080'
+      }
+    }
 
   });

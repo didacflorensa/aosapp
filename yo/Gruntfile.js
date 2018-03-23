@@ -406,6 +406,36 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
+    },
+
+    ngconstant: {
+      // Options for all targets
+      options: {
+        space: '  ',
+        wrap: '\'use strict\';\n\n {\%= __ngModule %}',
+        name: 'constants'
+      },
+      // Environment targets
+      development: {
+        options: {
+          dest: 'http://localhost:8080'
+        },
+        constants: {
+          ENV: {
+            name: 'dev'
+          }
+        }
+      },
+      production: {
+        options: {
+          dest: 'http://192.147.12.55:4000'
+        },
+        constants: {
+          ENV: {
+            name: 'prod'
+          }
+        }
+      }
     }
   });
 
@@ -459,5 +489,12 @@ module.exports = function (grunt) {
   grunt.registerTask('default', [
     'newer:jshint',
     'build'
+  ]);
+
+  grunt.registerTask('dev', [
+    'ngconstant:development'
+  ]);
+  grunt.registerTask('prod', [
+    'ngconstant:production'
   ]);
 };
