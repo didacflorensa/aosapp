@@ -428,7 +428,7 @@ module.exports = function (grunt) {
       },
       production: {
         options: {
-          dest: 'http://192.147.12.55:4000'
+          dest: 'http://193.144.12.55:4000'
         },
         constants: {
           ENV: {

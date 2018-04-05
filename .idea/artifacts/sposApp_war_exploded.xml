@@ -92,6 +92,9 @@
           <element id="library" level="project" name="Maven: com.jcraft:jsch:0.1.53" />
           <element id="library" level="project" name="Maven: com.googlecode.json-simple:json-simple:1.1.1" />
           <element id="library" level="project" name="Maven: javax.validation:validation-api:1.1.0.Final" />
+          <element id="library" level="project" name="Maven: com.github.ulisesbocchio:jasypt-spring-boot-starter:1.9" />
+          <element id="library" level="project" name="Maven: com.github.ulisesbocchio:jasypt-spring-boot:1.9" />
+          <element id="library" level="project" name="Maven: org.jasypt:jasypt:1.9.2" />
         </element>
       </element>
       <element id="directory" name="META-INF">

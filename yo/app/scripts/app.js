@@ -71,8 +71,8 @@ angular
           staticUrl: 'http://localhost:8080'
         },
         production: {
-          apiUrl: 'http://192.143.12.55:4000',
-          staticUrl: 'http://192.143.12.55:4000'
+          apiUrl: 'http://193.144.12.55:4000',
+          staticUrl: 'http://193.144.12.55:4000'
         }
       }
 
